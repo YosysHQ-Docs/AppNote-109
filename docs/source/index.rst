@@ -34,7 +34,7 @@ design languages such as VHDL or Verilog mainly because they were
 considered as languages of different purposes.
 
 The *SVA 3.1a* assertion specification was born as an integral part of
-the SystemVerilog specification language With the introduction of
+the SystemVerilog specification language with the introduction of
 *SystemVerilog 3.1a* and its goals of including both hardware design
 and verification capabilities.
 
@@ -72,7 +72,8 @@ Introduction to SVA
 definition of *property*. Another way to define an assertion is as a
 design statement expressed as Boolean function or property that the
 design must fulfill. The property is usually described using a language
-that can express actions of the design over time.
+that can express actions of the design over time. An assertion as a
+verification directive is described in more detail below.
 
 An example of the semantical components of a concurrent assertion is shown
 in *Figure 1.1*. This is the kind of assertion commonly using in *Formal
@@ -94,17 +95,27 @@ in the following sections.
 As shown in Figure 1.1, there are three verification functions that an
 assertion performs:
 
-- **assert**: Specifies *validity*, *correctness* or a behavior that a system
-      or design is obligated to implement. When using the *assert*
-      function, the solver's task is to either conclude that the
-      assertion and the design are a *tautology* or to show a
-      counterexample (CEX) indicating how the design violates *(contradicts)* the
-      assertion. **Behaviors are observed on the outputs of a Boolean function,
-      either design primary outputs or internal signals where some calculations
-      of interest happens**.
-- **assume**: 
-- **cover:**
-- **restrict**:
+- **assert:** Specifies *validity*, *correctness* or a behavior that a
+  system or design is obligated to implement. When using the *assert*
+  function, the solver's task is to either conclude that the assertion
+  and the design are a *tautology* or to show a counterexample (CEX)
+  indicating how the design violates or *contradicts* the assertion.
+  **Behaviors are observed on the outputs of a Boolean functions,
+  either design primary outputs or internal signals where some
+  calculations of interest happens**. In short, The assertion w.r.t of
+  a property is true for all legal values applied at design inputs.
+- **assume:** The property models how inputs of the design are driven
+  in an unexamined way, that is, as a fact that the solver does not check
+  but uses to *constraint* the valid values that will be used in the
+  **primary inputs**. An assertion with related *input assumptions* when is
+  proven, it is said that holds *assuming* that only the values constrained at
+  the input are driven in the block under test. Modeling *assumptions* is one
+  of the most error-prone tasks in formal verification that can cause *vacuity*
+  as described in *YosysHQ AppNote 120 -- Weak precondition cover and witness
+  for SVA properties*.
+- **cover:** Checks for satisfiability, that is, an evidence of whether any
+  given behavior is implemented in the design.
+- **restrict:**
 
 *Then, what is SVA?* - SVA is part of the IEEE 1800 and standarises
 assertion language semantics for SystemVerilog. That standard describes
@@ -113,8 +124,8 @@ correctness of a design described with properties over Boolean-valued
 functions and/or sequences that can be used to characterise the set of
 states where such formula holds, using assertions. SVA can be used for
 functional dynamic (simulation/emulation) and static (Formal Property
-Verification) testing. The focus of YosysHQ are *static methods*, therefore
-the description of SVA will be related to FPV.
+Verification) testing. The focus of *YosysHQ* are *static methods*,
+therefore the description of SVA will be related to FPV.
 
 ---------------
 Assertion Types
@@ -130,7 +141,7 @@ final immediate assertions. Except from *Simple immediate* that are used
 (solely) in SymbiYosys for FPV [3]_, the rest of the assertions are focused
 on simulation tasks.
 
-Immediate assertions are covered in detail in **Appnote 105 Formal Property 
+Immediate assertions are covered in detail in **Appnote 105 Formal Property
 Checking Basics**.
 
 +----------------------------------------------------------------------+
