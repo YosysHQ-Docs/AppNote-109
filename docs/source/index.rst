@@ -64,7 +64,6 @@ specified by the Assertions Committee (SV-AC).
     usage that *Accelera Formal Verification Technical Committee*
     started around 1998.
 
------------------------------------------
 Introduction to SVA
 -----------------------------------------
 *What is an assertion*\  [1]_\ *?* - From the P1800, an assertion
@@ -131,9 +130,9 @@ in detail in **Appnote 105 Formal Property Checking Basics**.
 +----------------------------------------------------------------------+
 
 
-An example of the semantic components of a concurrent assertion is shown
-in *Figure 1.2*. This is the kind of assertion commonly using in *Formal
-Property Verification (FPV)*.
+An example of a concurrent assertion is shown in *Figure 1.2*. This is
+the kind of assertion commonly using in *Formal Property Verification
+(FPV)*.
 
 +----------------------------------------------------------------------+
 | .. image:: media/assertion_struct.png                                |
@@ -141,10 +140,7 @@ Property Verification (FPV)*.
 |    :height: 2.93in                                                   |
 |    :align: center                                                    |
 +======================================================================+
-| Figure 1.2. The witness is the assertion logic (antecedent and       |
-| consequent) converted into a cover statement, whereas the weak       |
-| precondition is just a precondition reachability test with limited   |
-| visibility.                                                          |
+| Figure 1.2. One possible definition of a concurrent SVA.             |
 +----------------------------------------------------------------------+
 
 As shown in Figure 1.2, the property has a verification layer with different
@@ -184,10 +180,11 @@ functions stated below:
   if an assumption had been used, the simulator would have failed because it cannot be
   guaranteed that certain opcode is the only one applied to the design.
 
----------------
+===============
 Assertion Types
----------------
+===============
 
+--------------------
 Immediate Assertions
 --------------------
 Immediate assertions are pure combinatorial elements that do not allow for temporal domain
@@ -214,13 +211,14 @@ a concurrent one. This is more obvious in the simulation semantics of both
 types. An immediate assertion is evaluated as soon as the statement is
 reached, whereas the concurrent assertion can span over time.
 
-
+---------------------
 Concurrent Assertions
 ---------------------
 
 
+===============
 Clock and Reset
----------------
+===============
 
 The default clock event for a sequential property can be defined using
 the keyword **default clocking** and serves as the leading clock for all
@@ -255,6 +253,7 @@ definition is employed.
 | Figure N. Usage of default clocking and default reset                |
 +----------------------------------------------------------------------+
 
+=======================
 SystemVerilog Sequences
 =======================
 
