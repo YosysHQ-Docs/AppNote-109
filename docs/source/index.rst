@@ -44,7 +44,7 @@ and the assertions were no longer seen as interpreted comments but as
 part of the language itself. The standardisation of the semantics
 of SVA facilitated that different verification, emulation and formal
 property checking EDA tools could standardize its implementation,
-ensuring that all designs had the same results accross different tools.
+ensuring that all designs had the same results across different tools.
 This increased the adoption of SVA in the industry.
 
 In *SVA 3.1a*, both immediate and concurrent assertions were defined as
@@ -69,16 +69,17 @@ Introduction to SVA
 -----------------------------------------
 *What is an assertion*\  [1]_\ *?* - From the P1800, an assertion
 *specifies a behavior of the system*. This term is confusing with the
-definition of *property*. Another way to define an assertion is as a
+definition of *property* and with the different types of verification
+directives that it can have. Another way to define an assertion is as a
 design statement expressed as Boolean function or property that the
 design must fulfill. Such property is usually described using a language
 that can express behaviors of the design over time.
 
-*Then, what is SVA?* - SVA is part of the P1800 and standarises
+*Then, what is SVA?* - SVA is part of the P1800 and standardizes
 assertion language semantics for SystemVerilog. That standard describes
 the usage of a linear temporal logic [2]_ to define implementation
 correctness of a design described with properties over Boolean-valued
-functions and/or sequences that can be used to characterise the set of
+functions and/or sequences that can be used to characterize the set of
 states where such formula holds, using assertions. SVA can be used for
 functional dynamic (simulation/emulation) and static (Formal Property
 Verification) testing. The focus of *YosysHQ* are *static methods*,
@@ -91,7 +92,7 @@ of SVA that may lead to confusion. In the P1800, *assertion* is defined as:
   a behavior of the system".
 - **16. Assertions, 16.2 Overview, P364, Rev 2017:** "An assertion appears as
   an assertion statement that states the verification function to be performed".
-- **16. Assertions, 16.2 Overview, P364, Rev 2017:** "[assertion kinds ...]assert,
+- **16. Assertions, 16.2 Overview, P364, Rev 2017:** "[assertion kinds ...] assert,
   to specify the property as an obligation for the design that is to be checked to
   verify that the property holds".
 
@@ -100,8 +101,8 @@ Whereas property, the missing link, is defined as:
 - **16.12. Declaring properties, P420, Rev 2017:** "A property defines a behavior
   of the design".
 
-So in short, an *assertion* is an affirmation (verification construct) of a behavior
-described using *properties* (specification). Hoping to clear up this confusion, the
+So in short, an *assertion* is an affirmation or verification construct of a behavior
+described using *properties* or the specification. Hoping to clear up this confusion, the
 next section describes our interpretation of what SVA is.
 
 Re-Introduction to SVA
@@ -112,8 +113,26 @@ actual element of the language where the behavior of the design is specified,
 for example, using Boolean functions, sequences, and other expressions. SVA
 introduces different kind of assertions discussed in the following sections.
 
-An example of the semantical components of a concurrent assertion is shown
-in *Figure 1.1*. This is the kind of assertion commonly using in *Formal
+There are two kinds of assertions: *immediate* and *concurrent*.
+Immediate assertions are further divided into simple and deferred
+immediate. Deferred immediate are subdivided into observed immediate and
+final immediate assertions. Except from *Simple immediate* that are used
+in SymbiYosys for the open source FPV framework, and concurrent assertions,
+the rest are focused on simulation tasks. Immediate assertions are covered
+in detail in **Appnote 105 Formal Property Checking Basics**.
+
++----------------------------------------------------------------------+
+| .. image:: media/assertion_types.png                                 |
+|    :width: 6.5in                                                     |
+|    :height: 3.18in                                                   |
+|    :align: center                                                    |
++======================================================================+
+| Figure 1.1. A graphical description of the kinds of assertions.      |
++----------------------------------------------------------------------+
+
+
+An example of the semantic components of a concurrent assertion is shown
+in *Figure 1.2*. This is the kind of assertion commonly using in *Formal
 Property Verification (FPV)*.
 
 +----------------------------------------------------------------------+
@@ -122,13 +141,13 @@ Property Verification (FPV)*.
 |    :height: 2.93in                                                   |
 |    :align: center                                                    |
 +======================================================================+
-| Figure 1.1. The witness is the assertion logic (antecedent and       |
+| Figure 1.2. The witness is the assertion logic (antecedent and       |
 | consequent) converted into a cover statement, whereas the weak       |
 | precondition is just a precondition reachability test with limited   |
 | visibility.                                                          |
 +----------------------------------------------------------------------+
 
-As shown in Figure 1.1, the property has a verification layer with different
+As shown in Figure 1.2, the property has a verification layer with different
 functions stated below:
 
 - **assert:** Specifies *validity*, *correctness*, or a behavior that a
@@ -146,19 +165,24 @@ functions stated below:
   **primary inputs**. An assertion with related *input assumptions* when is
   proven, it is said that holds *assuming* that only the values constrained at
   the input are driven in the block under test. Modeling *assumptions* is one
-  of the most error-prone tasks in formal verification that can cause *vacuity*
-  as described in *YosysHQ AppNote 120 -- Weak precondition cover and witness
-  for SVA properties*.
+  of the most error-prone tasks in formal verification that can cause some problems
+  such as *vacuity* as described in *YosysHQ AppNote 120 -- Weak precondition
+  cover and witness for SVA properties*. Assumption correctness is not checked by
+  the formal tool.
 - **cover:** Checks for satisfiability, that is, an evidence of whether any
   given behavior is implemented in the design. The main difference with the
-  assertion statement is that when using cover, the solver succeed if there is
-  *any* behavior in the design that the property using cover directive dictates.
-  For the property under assertion directive, the behavior should be observed
-  *for all* conditions in the inputs of the design. <<-- Needs improvement.
+  assertion statement is that when using the *cover* statement on a property,
+  the proof succeed if there is *any* behavior in the design that the property
+  dictates. For the proof under assertion directive, the behavior should be
+  observed *for all* conditions in the inputs of the design. <<-- Needs improvement.
 - **restrict:** This directive is primarily used in FPV and is ignored in simulation.
   The *restrict* directive has similar semantics as *assume*, but is intended
-  to use as delimiter for state space, or in other words, to help in assertion
-  convergence: for example,
+  to use as delimiter in the state space, or in other words, to help in assertion
+  convergence [3]_. For example, the *restrict* verification directive can be used to
+  prove in a separated way, each arithmetic opcode (such as add, sub, etc). If the same
+  environment is reused in simulation, the simulator will ignore the restriction. Otherwise,
+  if an assumption had been used, the simulator would have failed because it cannot be
+  guaranteed that certain opcode is the only one applied to the design.
 
 ---------------
 Assertion Types
@@ -166,90 +190,37 @@ Assertion Types
 
 Immediate Assertions
 --------------------
+Immediate assertions are pure combinatorial elements that do not allow for temporal domain
+events or sequences. Immediate assertions have the following properties:
 
-There are two kinds of assertions: *immediate* and *concurrent*.
-Immediate assertions are further divided into simple and deferred
-immediate. Deferred immediate are subdivided into observed immediate and
-final immediate assertions. Except from *Simple immediate* that are used
-in SymbiYosys for the open source FPV framework, and concurrent assertions,
-the rest are focused on simulation tasks.
-
-Immediate assertions are covered in detail in **Appnote 105 Formal Property
-Checking Basics**.
+* Non-temporal: Evaluated and reported at the same time (they cannot wait for any temporal time).
+* Evaluation is performed immediately with the values sampled at the moment of activation
+  of the assertion condition variables.
+* **A clocked immediate assertion is not a concurrent assertion**.
+* Can be specified only in procedural blocks.
 
 +----------------------------------------------------------------------+
-| .. image:: media/assertion_types.png                                 |
-|    :width: 6.5in                                                     |
-|    :height: 3.18in                                                   |
+| .. image:: media/immediate0.png                                      |
+|    :width: 3.9in                                                     |
+|    :height: 2.5in                                                    |
 |    :align: center                                                    |
 +======================================================================+
-| Figure 1.2. A graphical description of the kinds of assertions.      |
+| Figure 1.3. Immediate assertion example, with clocked and unclocked  |
+| semantics.                                                           |
 +----------------------------------------------------------------------+
+
+An edge-sensitive immediate assertion does not have the same semantics as
+a concurrent one. This is more obvious in the simulation semantics of both
+types. An immediate assertion is evaluated as soon as the statement is
+reached, whereas the concurrent assertion can span over time.
+
 
 Concurrent Assertions
 ---------------------
 
-Formal Property Verification uses SystemVerilog assertions to describe
-events and properties that a design should satisfy in a model. The model
-is the design in RTL and together with the properties in SVA, is
-converted into a format or structure suitable for static analysis (for
-example a state and transition diagrams). This structure or format is
-the input of a solver, which is the entity in charge of validating or
-refuting said properties using mathematical techniques.
 
-The most common constructs to specify the design behavior are assert,
-assume and cover statements, and their types are immediate and
-concurrent. Concurrent properties are activated at each main dynamic
-event (such as the system clock) and the semantics are based on such
-events, whereas the immediate properties do not depend on a dynamic
-event (unclocked) and they behave as an if statement.
-
-Immediate and Concurrent Assertions for FPV
-
-An assertion is an obligation of the system, that is, the property
-behavior must be **valid** under all circumstances (possible inputs) and
-if this behavior is violated, the tool will output a waveform showing
-the sequence of inputs leading to the violation. On the other hand, if
-the property succeeds, no waveform is generated. The cover is a
-statement that checks if a specified behavior is **satisfiable** in the
-current system, and if such behavior exists, the tool will show a
-waveform with the inputs leading to that state (this sequence of inputs
-is one of many possible interpretations that could exist in the design).
-Finally, assumptions express that a statement is assumed to hold, this
-is not a check but a restriction given to a model, for example, to the
-design inputs that are used to constraint the verification to a specific
-scenarios (an assumption can be used to constrain two inputs that are
-expected to be driven in a mutually exclusive manner by a neighbor
-block). Assumption correctness is not checked by the formal tool.
-
-+----------------------------------------------------------------------+
-| +----------------------------------------------------------------+   |
-| | assign b = a;                                                  |   |
-| |                                                                |   |
-| | // if a is true then must be true b (edge-sensitive version)   |   |
-| |                                                                |   |
-| | always_ff @(posedge clk) immediate0: assert (b == a);          |   |
-| |                                                                |   |
-| | // if a is true then must be true b (level-sensitive version)  |   |
-| |                                                                |   |
-| | always_comb immediate1: assert (b == a);                       |   |
-| +================================================================+   |
-| | // if a is true then must be true b (or “a” follows “b”)       |   |
-| |                                                                |   |
-| | concurrent0: assert property (@(posedge clk) !a \|\| b);       |   |
-| |                                                                |   |
-| | // same but using overlapping implication operator \|->        |   |
-| | described below                                                |   |
-| |                                                                |   |
-| | concurrent1: assert property (@(posedge clk) a \|-> b);        |   |
-| +----------------------------------------------------------------+   |
-+======================================================================+
-| Figure N. Immediate (upper side) and concurrent (lower side)         |
-| assertions. The concurrent assertion semantics are equivalent to the |
-| implication operation that will be discussed later in this post.     |
-+----------------------------------------------------------------------+
-
-Clocks and Resets
+Clock and Reset
+---------------
 
 The default clock event for a sequential property can be defined using
 the keyword **default clocking** and serves as the leading clock for all
@@ -285,6 +256,7 @@ definition is employed.
 +----------------------------------------------------------------------+
 
 SystemVerilog Sequences
+=======================
 
 Sequences can be more complex than just Boolean values. Basic sequences
 can contain single delays (for example ##1 means one cycle delay) and
@@ -374,3 +346,6 @@ the advantages of SVA over the open source version of SBY.
    fact, most of the notations from the literature that describe these
    methods are employed to express the formal semantics of SVA in the
    P1800 Language Reference Manual (LRM).
+.. [3]
+   Convergence in FPV is the process to have a full proof, which can be
+   challenging for some designs.
