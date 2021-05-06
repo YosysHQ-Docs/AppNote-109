@@ -53,8 +53,8 @@ language features that were fixed in SVA2009. Different companies have
 worked to improve the semantics and syntax of SVA to make it into how it
 is today.
 
-The SVA (SystemVerilog Assertions) specification is part of the IEEE
-1800-2012. All the features of SystemVerilog regarding assertions are
+The SVA (SystemVerilog Assertions) specification is part of the P1800.
+All the features of SystemVerilog regarding assertions are
 specified by the Assertions Committee (SV-AC).
 
 .. note::
@@ -67,18 +67,54 @@ specified by the Assertions Committee (SV-AC).
 -----------------------------------------
 Introduction to SVA
 -----------------------------------------
-*What is an assertion*\  [1]_\ *?* - From the IEEE 1800, an assertion
+*What is an assertion*\  [1]_\ *?* - From the P1800, an assertion
 *specifies a behavior of the system*. This term is confusing with the
 definition of *property*. Another way to define an assertion is as a
 design statement expressed as Boolean function or property that the
-design must fulfill. The property is usually described using a language
-that can express actions of the design over time. An assertion as a
-verification directive is described in more detail below.
+design must fulfill. Such property is usually described using a language
+that can express behaviors of the design over time.
+
+*Then, what is SVA?* - SVA is part of the P1800 and standarises
+assertion language semantics for SystemVerilog. That standard describes
+the usage of a linear temporal logic [2]_ to define implementation
+correctness of a design described with properties over Boolean-valued
+functions and/or sequences that can be used to characterise the set of
+states where such formula holds, using assertions. SVA can be used for
+functional dynamic (simulation/emulation) and static (Formal Property
+Verification) testing. The focus of *YosysHQ* are *static methods*,
+therefore the description of SVA will be related to FPV.
+
+As mentioned before, there is a **huge inconsistency** in the definition
+of SVA that may lead to confusion. In the P1800, *assertion* is defined as:
+
+- **16. Assertions, 16.2 Overview, P364, Rev 2017:** "An assertion specifies
+  a behavior of the system".
+- **16. Assertions, 16.2 Overview, P364, Rev 2017:** "An assertion appears as
+  an assertion statement that states the verification function to be performed".
+- **16. Assertions, 16.2 Overview, P364, Rev 2017:** "[assertion kinds ...]assert,
+  to specify the property as an obligation for the design that is to be checked to
+  verify that the property holds".
+
+Whereas property, the missing link, is defined as:
+
+- **16.12. Declaring properties, P420, Rev 2017:** "A property defines a behavior
+  of the design".
+
+So in short, an *assertion* is an affirmation (verification construct) of a behavior
+described using *properties* (specification). Hoping to clear up this confusion, the
+next section describes our interpretation of what SVA is.
+
+Re-Introduction to SVA
+----------------------
+The building block of SVA is the `property` construct, that not only
+distinguishes an *immediate* from a *concurrent* assertion, but is the
+actual element of the language where the behavior of the design is specified,
+for example, using Boolean functions, sequences, and other expressions. SVA
+introduces different kind of assertions discussed in the following sections.
 
 An example of the semantical components of a concurrent assertion is shown
 in *Figure 1.1*. This is the kind of assertion commonly using in *Formal
-Property Verification (FPV)*. Assertions and their types will be described
-in the following sections.
+Property Verification (FPV)*.
 
 +----------------------------------------------------------------------+
 | .. image:: media/assertion_struct.png                                |
@@ -92,10 +128,10 @@ in the following sections.
 | visibility.                                                          |
 +----------------------------------------------------------------------+
 
-As shown in Figure 1.1, there are three verification functions that an
-assertion performs:
+As shown in Figure 1.1, the property has a verification layer with different
+functions stated below:
 
-- **assert:** Specifies *validity*, *correctness* or a behavior that a
+- **assert:** Specifies *validity*, *correctness*, or a behavior that a
   system or design is obligated to implement. When using the *assert*
   function, the solver's task is to either conclude that the assertion
   and the design are a *tautology* or to show a counterexample (CEX)
@@ -103,7 +139,7 @@ assertion performs:
   **Behaviors are observed on the outputs of a Boolean functions,
   either design primary outputs or internal signals where some
   calculations of interest happens**. In short, The assertion w.r.t of
-  a property is true for all legal values applied at design inputs.
+  a property must be true for all legal values applied at design inputs.
 - **assume:** The property models how inputs of the design are driven
   in an unexamined way, that is, as a fact that the solver does not check
   but uses to *constraint* the valid values that will be used in the
@@ -114,18 +150,15 @@ assertion performs:
   as described in *YosysHQ AppNote 120 -- Weak precondition cover and witness
   for SVA properties*.
 - **cover:** Checks for satisfiability, that is, an evidence of whether any
-  given behavior is implemented in the design.
-- **restrict:**
-
-*Then, what is SVA?* - SVA is part of the IEEE 1800 and standarises
-assertion language semantics for SystemVerilog. That standard describes
-the usage of a linear temporal logic [2]_ to define implementation
-correctness of a design described with properties over Boolean-valued
-functions and/or sequences that can be used to characterise the set of
-states where such formula holds, using assertions. SVA can be used for
-functional dynamic (simulation/emulation) and static (Formal Property
-Verification) testing. The focus of *YosysHQ* are *static methods*,
-therefore the description of SVA will be related to FPV.
+  given behavior is implemented in the design. The main difference with the
+  assertion statement is that when using cover, the solver succeed if there is
+  *any* behavior in the design that the property using cover directive dictates.
+  For the property under assertion directive, the behavior should be observed
+  *for all* conditions in the inputs of the design. <<-- Needs improvement.
+- **restrict:** This directive is primarily used in FPV and is ignored in simulation.
+  The *restrict* directive has similar semantics as *assume*, but is intended
+  to use as delimiter for state space, or in other words, to help in assertion
+  convergence: for example,
 
 ---------------
 Assertion Types
@@ -138,8 +171,8 @@ There are two kinds of assertions: *immediate* and *concurrent*.
 Immediate assertions are further divided into simple and deferred
 immediate. Deferred immediate are subdivided into observed immediate and
 final immediate assertions. Except from *Simple immediate* that are used
-(solely) in SymbiYosys for FPV [3]_, the rest of the assertions are focused
-on simulation tasks.
+in SymbiYosys for the open source FPV framework, and concurrent assertions,
+the rest are focused on simulation tasks.
 
 Immediate assertions are covered in detail in **Appnote 105 Formal Property
 Checking Basics**.
@@ -340,10 +373,4 @@ the advantages of SVA over the open source version of SBY.
    methods applied to real world hardware design and verification. In
    fact, most of the notations from the literature that describe these
    methods are employed to express the formal semantics of SVA in the
-   IEEE 1800 Language Reference Manual (LRM).
-
-.. [3]
-   Arguably there is another EDA tool that supports immediate assertions for
-   static functional verification (another term for FPV). However, this
-   tool is not opensource and supporting immediate assertions is not their
-   goal.
+   P1800 Language Reference Manual (LRM).
