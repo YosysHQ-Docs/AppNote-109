@@ -67,12 +67,16 @@ specified by the Assertions Committee (SV-AC).
 Introduction to SVA
 -----------------------------------------
 *What is an assertion*\  [1]_\ *?* - From the P1800, an assertion
-*specifies a behavior of the system*. This term is confusing with the
-definition of *property* and with the different types of verification
-directives that it can have. Another way to define an assertion is as a
-design statement expressed as Boolean function or property that the
-design must fulfill. Such property is usually described using a language
-that can express behaviors of the design over time.
+*specifies a behavior of the system*. This term is confusing because is
+similar to the definition of *property*. In fact, both *assert* and
+*property* refer to the same thing. The inconsistency is mainly because
+the term *assertion* is adopted in ABV, and *property* in FPV. BV is more
+widely adopted, so the term assertion is used in a more "traditionalist" way.
+
+Another way to define an assertion is as an unambiguous design behavior
+expressed as Boolean function that the design must fulfill. Such property
+is usually described using a language that can express behaviors of the
+design over time.
 
 *Then, what is SVA?* - SVA is part of the P1800 and standardizes
 assertion language semantics for SystemVerilog. That standard describes
@@ -84,8 +88,9 @@ functional dynamic (simulation/emulation) and static (Formal Property
 Verification) testing. The focus of *YosysHQ* are *static methods*,
 therefore the description of SVA will be related to FPV.
 
-As mentioned before, there is a **huge inconsistency** in the definition
-of SVA that may lead to confusion. In the P1800, *assertion* is defined as:
+As mentioned before, there is an *inconsistency* in the definition of the
+building blocks of SVA that may lead to confusion. In the P1800, *assertion*
+is defined as:
 
 - **16. Assertions, 16.2 Overview, P364, Rev 2017:** "An assertion specifies
   a behavior of the system".
@@ -95,7 +100,7 @@ of SVA that may lead to confusion. In the P1800, *assertion* is defined as:
   to specify the property as an obligation for the design that is to be checked to
   verify that the property holds".
 
-Whereas property, the missing link, is defined as:
+Whereas property, is defined as:
 
 - **16.12. Declaring properties, P420, Rev 2017:** "A property defines a behavior
   of the design".
@@ -128,7 +133,6 @@ in detail in **Appnote 105 Formal Property Checking Basics**.
 +======================================================================+
 | Figure 1.1. A graphical description of the kinds of assertions.      |
 +----------------------------------------------------------------------+
-
 
 An example of a concurrent assertion is shown in *Figure 1.2*. This is
 the kind of assertion commonly using in *Formal Property Verification
@@ -174,7 +178,7 @@ functions stated below:
 - **restrict:** This directive is primarily used in FPV and is ignored in simulation.
   The *restrict* directive has similar semantics as *assume*, but is intended
   to use as delimiter in the state space, or in other words, to help in assertion
-  convergence [3]_. For example, the *restrict* verification directive can be used to
+  convergence [4]_. For example, the *restrict* verification directive can be used to
   prove in a separated way, each arithmetic opcode (such as add, sub, etc). If the same
   environment is reused in simulation, the simulator will ignore the restriction. Otherwise,
   if an assumption had been used, the simulator would have failed because it cannot be
@@ -193,7 +197,7 @@ events or sequences. Immediate assertions have the following properties:
 * Non-temporal: Evaluated and reported at the same time (they cannot wait for any temporal time).
 * Evaluation is performed immediately with the values sampled at the moment of activation
   of the assertion condition variables.
-* **A clocked immediate assertion is not a concurrent assertion**.
+* A clocked immediate assertion does not have the semantics of a concurrent assertion [3]_.
 * Can be specified only in procedural blocks.
 
 +----------------------------------------------------------------------+
@@ -345,6 +349,13 @@ the advantages of SVA over the open source version of SBY.
    fact, most of the notations from the literature that describe these
    methods are employed to express the formal semantics of SVA in the
    P1800 Language Reference Manual (LRM).
+
 .. [3]
+   Although the result of using one or the other in FPV may be the same,
+   under certain circumstances, the way in which they are evaluated, for example,
+   in simulation, is totally different. So this can create consistency problems
+   in environments where the same assertions are used for both flows.
+
+.. [4]
    Convergence in FPV is the process to have a full proof, which can be
    challenging for some designs.
