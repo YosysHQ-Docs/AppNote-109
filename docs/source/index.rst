@@ -74,9 +74,9 @@ the term *assertion* is adopted in ABV, and *property* in FPV. BV is more
 widely adopted, so the term assertion is used in a more "traditionalist" way.
 
 Another way to define an assertion is as an unambiguous design behavior
-expressed as Boolean function that the design must fulfill. Such property
-is usually described using a language that can express behaviors of the
-design over time.
+expressed as a Boolean function or temporal expressions, that the design
+must fulfill. Such property is usually described using a language that
+can express behaviors of the design over time.
 
 *Then, what is SVA?* - SVA is part of the P1800 and standardizes
 assertion language semantics for SystemVerilog. That standard describes
@@ -109,6 +109,14 @@ So in short, an *assertion* is an affirmation or verification construct of a beh
 described using *properties* or the specification. Hoping to clear up this confusion, the
 next section describes our interpretation of what SVA is.
 
+.. note::
+   Although SVA talks a lot about verification tasks, it can (and should) also be
+   used by design engineers. In fact, in FPV all properties must be synthesizable,
+   so they are more natural for a design engineer.
+   Using SVA instead of comments to check some functionalities of the RTL,
+   or some behaviors when a testbench is not available, can be very useful in the
+   RTL bring-up, for example.
+
 Re-Introduction to SVA
 ----------------------
 The building block of SVA is the `property` construct, that not only
@@ -116,6 +124,17 @@ distinguishes an *immediate* from a *concurrent* assertion, but is the
 actual element of the language where the behavior of the design is specified,
 for example, using Boolean functions, sequences, and other expressions. SVA
 introduces different kind of assertions discussed in the following sections.
+
+Some benefits of SVA are:
+
+* Enables protocols to be specified and verified using unambiguous constructs.
+* Highly improves IP reuse. Interface assertions in the IP can be used as monitors
+  for simulation/FPV to ensure correct integration.
+* Reduces Time to Market (TTM).
+* Assertions can be used instead of comments to document in a concise way design
+  behaviors in a common and expressive language.
+
+Among others.
 
 There are two kinds of assertions: *immediate* and *concurrent*.
 Immediate assertions are further divided into simple and deferred
@@ -148,7 +167,112 @@ the kind of assertion commonly using in *Formal Property Verification
 +----------------------------------------------------------------------+
 
 As shown in Figure 1.2, the property has a verification layer with different
-functions stated below:
+functions namely *assert*, *assume*, *cover* and *restrict* that are described
+in <I want to do a link here, just writing a stub>.
+
+===============
+Assertion Types
+===============
+
+--------------------
+Immediate Assertions
+--------------------
+Immediate assertions are pure combinatorial elements that do not allow for temporal domain
+events or sequences. Immediate assertions have the following properties:
+
+- Non-temporal.
+
+  - They are evaluated and reported at the same time (they cannot wait for any temporal time).
+
+- Evaluation is performed immediately.
+
+  - With the values sampled at the moment of activation of the assertion condition variables.
+
+- Simpler evaluation semantics.
+
+  - A clocked immediate assertion does not have the semantics of a concurrent assertion [3]_.
+
+- Can be specified only in procedural blocks.
+
++----------------------------------------------------------------------+
+| .. image:: media/immediate0.png                                      |
+|    :width: 3.9in                                                     |
+|    :height: 2.5in                                                    |
+|    :align: center                                                    |
++======================================================================+
+| Figure 1.3. Immediate assertion example, with clocked and unclocked  |
+| semantics.                                                           |
++----------------------------------------------------------------------+
+
+Immediate assertions are better described in **Appnote 105 Formal Property
+Checking Basics**
+
+---------------------
+Concurrent Assertions
+---------------------
+The concurrent assertions capture sequences of events that span over time,
+that is, they have a temporal domain that is evaluated at each clock tick
+or time step of the system. A concurrent assertion rises the level of
+abstraction of SystemVerilog due the transactional nature of this construct.
+
+Only in terms of FPV, an immediate assertion could mimic a concurrent assertion
+if certain helper logic is created such that it generates the notion of
+*progress*. This logic of course may not be correct and can be quite complex
+depending on the property expression to be described, so it needs to be verified
+along with the property that this logic is supposed to describe. This method is
+not suggested as it could add an extra verification task to the design, that can
+be avoided using SVA.
+
+.. note::
+   This is one of the advantages of the *Tabby CAD Suite* over the Open Source
+   Version: A leading-industry parser provides P1800 standard-compliant SV and
+   SV-AC semantics for elaboration. So all the SystemVerilog constructs are
+   enabled for the designer/validation engineer to use.
+
+The Figure 1.4 shows an example of a concurrent assertion definition. This kind
+of assertions can be defined in:
+
+* *Initial* or *always* blocks.
+* Inside a *module* or *checker* object.
+* In a SystemVerilog *interface*.
+* For simulation, in *progam* blocks.
+
++----------------------------------------------------------------------+
+| .. image:: media/concurrent0.png                                     |
+|    :width: 5.4in                                                     |
+|    :height: 2.2in                                                    |
+|    :align: center                                                    |
++======================================================================+
+| Figure 1.4. Concurrent assertion example, defined in the procedural  |
+| code and as standalone.                                              |
++----------------------------------------------------------------------+
+
+===============
+Elements of SVA
+===============
+----------
+SVA Layers
+----------
+A concurrent property is composed primarily of four layers:
+
+- Boolean.
+- Temporal.
+- Modeling.
+- Verification.
+
+These layers are discussed in the following sections.
+
+Boolean Layer
+-------------
+
+Temporal Layer
+--------------
+
+Modeling Layer
+--------------
+
+Verification Layer
+------------------
 
 - **assert:** Specifies *validity*, *correctness*, or a behavior that a
   system or design is obligated to implement. When using the *assert*
@@ -162,7 +286,7 @@ functions stated below:
 - **assume:** The property models how inputs of the design are driven
   in an unexamined way, that is, as a fact that the solver does not check
   but uses to *constraint* the valid values that will be used in the
-  **primary inputs**. An assertion with related *input assumptions* when is
+  *primary inputs*. An assertion with related *input assumptions* when is
   proven, it is said that holds *assuming* that only the values constrained at
   the input are driven in the block under test. Modeling *assumptions* is one
   of the most error-prone tasks in formal verification that can cause some problems
@@ -174,55 +298,22 @@ functions stated below:
   assertion statement is that when using the *cover* statement on a property,
   the proof succeed if there is *any* behavior in the design that the property
   dictates. For the proof under assertion directive, the behavior should be
-  observed *for all* conditions in the inputs of the design. <<-- Needs improvement.
+  observed *for all* conditions in the inputs of the design.
 - **restrict:** This directive is primarily used in FPV and is ignored in simulation.
   The *restrict* directive has similar semantics as *assume*, but is intended
   to use as delimiter in the state space, or in other words, to help in assertion
   convergence [4]_. For example, the *restrict* verification directive can be used to
   prove in a separated way, each arithmetic opcode (such as add, sub, etc). If the same
-  environment is reused in simulation, the simulator will ignore the restriction. Otherwise,
-  if an assumption had been used, the simulator would have failed because it cannot be
-  guaranteed that certain opcode is the only one applied to the design.
-
-===============
-Assertion Types
-===============
-
---------------------
-Immediate Assertions
---------------------
-Immediate assertions are pure combinatorial elements that do not allow for temporal domain
-events or sequences. Immediate assertions have the following properties:
-
-* Non-temporal: Evaluated and reported at the same time (they cannot wait for any temporal time).
-* Evaluation is performed immediately with the values sampled at the moment of activation
-  of the assertion condition variables.
-* A clocked immediate assertion does not have the semantics of a concurrent assertion [3]_.
-* Can be specified only in procedural blocks.
-
-+----------------------------------------------------------------------+
-| .. image:: media/immediate0.png                                      |
-|    :width: 3.9in                                                     |
-|    :height: 2.5in                                                    |
-|    :align: center                                                    |
-+======================================================================+
-| Figure 1.3. Immediate assertion example, with clocked and unclocked  |
-| semantics.                                                           |
-+----------------------------------------------------------------------+
-
-An edge-sensitive immediate assertion does not have the same semantics as
-a concurrent one. This is more obvious in the simulation semantics of both
-types. An immediate assertion is evaluated as soon as the statement is
-reached, whereas the concurrent assertion can span over time.
-
----------------------
-Concurrent Assertions
----------------------
+  environment is reused in simulation, the simulator will ignore the restriction.
+  Otherwise, if an assumption had been used, the simulator would have failed because
+  it cannot be guaranteed that certain opcode is the only one applied to the design.
 
 
-===============
-Clock and Reset
-===============
+Clock or time step
+------------------
+
+Disable condition
+-----------------
 
 The default clock event for a sequential property can be defined using
 the keyword **default clocking** and serves as the leading clock for all
