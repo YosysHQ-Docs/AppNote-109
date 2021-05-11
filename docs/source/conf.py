@@ -1,6 +1,7 @@
 # https://stackoverflow.com/questions/40641252/how-can-i-avoid-the-horizontal-scrollbar-in-a-rest-table
 def setup(app):
-        app.add_stylesheet('custom.css')
+        #app.add_stylesheet('custom.css') deprecated
+        app.add_css_file('custom.css')
 
 # These folders are copied to the documentation's HTML output
 html_static_path = ['_static']
