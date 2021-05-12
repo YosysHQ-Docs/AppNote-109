@@ -177,8 +177,7 @@ Assertion Types
 --------------------
 Immediate Assertions
 --------------------
-Immediate assertions are pure combinatorial elements that do not allow for temporal domain
-events or sequences. Immediate assertions have the following properties:
+Immediate assertions are pure combinatorial elements that do not allow for temporal domain events or sequences. Immediate assertions have the following properties:
 
 - Non-temporal.
 
@@ -260,13 +259,33 @@ A concurrent property is composed primarily of four layers:
 - Modeling.
 - Verification.
 
-These layers are discussed in the following sections.
+These layers gives SVA full expressiveness. More details are discussed in the
+following sections.
 
 Boolean Layer
 -------------
+Concurrent properties can contain Boolean expressions that are composed of
+SystemVerilog expressions with some restrictions. These expressions are used
+to express conditions or behaviors of the design. Consider the Figure 1.5 that
+represents the Boolean layer of a concurrent property extracted from AXI4-Stream.
+
++-------------------------------------------------------------------------+
+| .. literalinclude:: ./child/0-keep_strb_rsvd.sv                         |
+|     :language: systemverilog                                            |
+|     :lines: 1-4                                                         |
++=========================================================================+
+| Figure 1.5. The Boolean layer of the following property: "A combination |
+| of TKEEP LOW and TSTRB HIGH must not be used (2.4.3 TKEEP and TSTRB     |
+| combinations, p2-9, Table 2-2)." from AMBA IHI0051A.                    |
++-------------------------------------------------------------------------+
+
+As can be seen, the evaluation of the Boolean expression shown in Figure 1.5
+will be `logic one` when any combination of a TKEEP bit low and the same
+bit in TSTRB high, otherwise the result will be `logic zero`.
 
 Temporal Layer
 --------------
+
 
 Modeling Layer
 --------------
