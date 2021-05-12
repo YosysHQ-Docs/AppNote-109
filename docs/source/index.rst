@@ -125,6 +125,9 @@ actual element of the language where the behavior of the design is specified,
 for example, using Boolean functions, sequences, and other expressions. SVA
 introduces different kind of assertions discussed in the following sections.
 
+.. note::
+   SVA supports both white-box and black-box verification.
+
 Some benefits of SVA are:
 
 * Enables protocols to be specified and verified using unambiguous constructs.
@@ -168,7 +171,7 @@ the kind of assertion commonly using in *Formal Property Verification
 
 As shown in Figure 1.2, the property has a verification layer with different
 functions namely *assert*, *assume*, *cover* and *restrict* that are described
-in <I want to do a link here, just writing a stub>.
+in `I want to do a link here, just writing a stub <tbd>` __.
 
 ===============
 Assertion Types
@@ -246,6 +249,35 @@ of assertions can be defined in:
 | code and as standalone.                                              |
 +----------------------------------------------------------------------+
 
+Clock or time step
+------------------
+Concurrent assertions are associated with a *clock* which defines the
+sampling clock or the point in time where the assertion is evaluated. This
+construct helps to explicitly define the event for sampled valued
+functions as well, that will be discussed in next sections.
+The default clock event for a concurrent property can be defined using
+the keyword `default clocking` and serves as the leading clock for all
+the concurrent properties. The Figure 1.5 shows an example of default
+clocking definition.
+
+Disable condition
+-----------------
+Likewise, some properties may need to be disabled during some events,
+because their results are not valid anyway, for example, during the
+reset state. The **default disable iff (event)** keywords can be used
+to define when a concurrent assertion result is not intended to be
+checked. The Figure 1.5 shows an example of default reset definition.
+
++----------------------------------------------------------------------+
+| .. literalinclude:: ./child/pipe.sv                                  |
+|     :language: systemverilog                                         |
+|     :lines: 1-13                                                     |
++======================================================================+
+| Figure 1.4. Usage of default clocking and default disable events used|
+| to state that all concurrent properties are checked each *posedge*   |
+| PCLK and disabled if the *PRSTn* reset is deasserted.                |
++----------------------------------------------------------------------+
+
 ===============
 Elements of SVA
 ===============
@@ -255,8 +287,8 @@ SVA Layers
 A concurrent property is composed primarily of four layers:
 
 - Boolean.
-- Temporal.
-- Modeling.
+- Temporal or Sequence.
+- Property.
 - Verification.
 
 These layers gives SVA full expressiveness. More details are discussed in the
@@ -283,49 +315,30 @@ As can be seen, the evaluation of the Boolean expression shown in Figure 1.5
 will be `logic one` when any combination of a TKEEP bit low and the same
 bit in TSTRB high, otherwise the result will be `logic zero`.
 
-Temporal Layer
---------------
+Temporal or Sequence Layer
+--------------------------
 The temporal layer express behaviors that can span over time, usually
 expressed using SERE-regular _[5] expressions known as *sequences*.
 
+SVA provides a set of powerful temporal operators that can be used to
+describe complex behaviors or conditions in different points of time.
+
 Sequences can be more complex than just Boolean values. Basic sequences
-can contain single delays (for example ##1 means one cycle delay) and
-bounded/unbounded range delays (the bounded sequence ##[1:10] means one
-to ten cycles later, the unbounded sequence ##[+] means one or more
-cycles later). Sequences can be enclosed within sequence … endsequence
-SVA constructs, or described directly in the property block. More basic
-and advanced sequences exist, but the description of them is outside of
-the scope of this document.
+can contain single delays (for example `##1` means one cycle delay) and
+bounded/unbounded range delays (the bounded sequence `##[1:10]` means one
+to ten cycles later, the unbounded sequence `##[+]` means one or more
+cycles later). Sequences can be enclosed within `sequence … endsequence`
+SVA constructs, or described directly in the property block.
 
-For example, consider the following system requirement encoded as a
-property from the `AMBA 5 CHI
-Specification <https://developer.arm.com/documentation/ihi0050/c>`__,
-Figure 13-6: “If the tx_fsm transmit link sequence is TxStop, TxAct,
-TxRun, TxDeact and TxStop, the output the tx_link_ok will be asserted
-one cycle later. Each state transition must be performed between 1 and 4
-clock cycles”. This statement can be partitioned as shown below:
+Some sequential property operators are discussed below.
 
-+--------------------------------------+
-| +----------------------------------+ |
-| | **Sequence (antecedent/cause):** | |
-| |                                  | |
-| | *tx_fsm == TxStop ##[1:4],*      | |
-| |                                  | |
-| | *tx_fsm == TxAct ##[1:4],*       | |
-| |                                  | |
-| | *tx_fsm == TxRun ##[1:4],*       | |
-| |                                  | |
-| | *tx_fsm == TxDeact ##[1:4],*     | |
-| |                                  | |
-| | *tx_fsm == TxStop ##[1:4]*       | |
-| +==================================+ |
-| | **Effect (consequent):**         | |
-| |                                  | |
-| | *##1 tx_link_ok == 1’b1*         | |
-| +----------------------------------+ |
-+======================================+
-| Figure N.                            |
-+--------------------------------------+
+Sequence Concatenation
+----------------------
+
+
+Sequence Fusion
+---------------
+
 
 Property Layer
 --------------
@@ -368,44 +381,8 @@ Verification Layer
   it cannot be guaranteed that certain opcode is the only one applied to the design.
 
 
-Clock or time step
-------------------
 
-Disable condition
------------------
 
-The default clock event for a sequential property can be defined using
-the keyword **default clocking** and serves as the leading clock for all
-the concurrent properties. Likewise, some properties may need to be
-disabled in some events, because their results are not valid anyway, for
-example, during the reset state. The **default disable iff (event)**
-keywords can be used for this.
-
-In this example of a simple property from a PIPE interface, to state
-that all concurrent properties are checked each *posedge* PCLK and
-disabled if the *PRSTn* reset is deasserted, the following SystemVerilog
-definition is employed.
-
-+----------------------------------------------------------------------+
-| // Concurrent properties are checked each *posedge* PCLK             |
-|                                                                      |
-| default clocking formal_clock                                        |
-|                                                                      |
-| @(posedge PCLK);                                                     |
-|                                                                      |
-| endclocking                                                          |
-|                                                                      |
-| // And disabled if the *PRSTn* reset is deasserted                   |
-|                                                                      |
-| default disable iff (!PRSTn);                                        |
-|                                                                      |
-| property_a: assert property (RxStatus == 3’b011 \|-> ##1             |
-| Receiver_detected); // The property does not need to explicitly      |
-| define PCLK as main clock and !PRSTn as disable event, as it is      |
-| defined in the default clocking and disable blocks.                  |
-+======================================================================+
-| Figure N. Usage of default clocking and default reset                |
-+----------------------------------------------------------------------+
 
 Now, to connect both cause and effect (or antecedent and consequent) the
 *implication* operation (|-> non-overlapping, \|=> overlapping) is used.
