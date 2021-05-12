@@ -285,9 +285,49 @@ bit in TSTRB high, otherwise the result will be `logic zero`.
 
 Temporal Layer
 --------------
+The temporal layer express behaviors that can span over time, usually
+expressed using SERE-regular _[5] expressions known as *sequences*.
 
+Sequences can be more complex than just Boolean values. Basic sequences
+can contain single delays (for example ##1 means one cycle delay) and
+bounded/unbounded range delays (the bounded sequence ##[1:10] means one
+to ten cycles later, the unbounded sequence ##[+] means one or more
+cycles later). Sequences can be enclosed within sequence … endsequence
+SVA constructs, or described directly in the property block. More basic
+and advanced sequences exist, but the description of them is outside of
+the scope of this document.
 
-Modeling Layer
+For example, consider the following system requirement encoded as a
+property from the `AMBA 5 CHI
+Specification <https://developer.arm.com/documentation/ihi0050/c>`__,
+Figure 13-6: “If the tx_fsm transmit link sequence is TxStop, TxAct,
+TxRun, TxDeact and TxStop, the output the tx_link_ok will be asserted
+one cycle later. Each state transition must be performed between 1 and 4
+clock cycles”. This statement can be partitioned as shown below:
+
++--------------------------------------+
+| +----------------------------------+ |
+| | **Sequence (antecedent/cause):** | |
+| |                                  | |
+| | *tx_fsm == TxStop ##[1:4],*      | |
+| |                                  | |
+| | *tx_fsm == TxAct ##[1:4],*       | |
+| |                                  | |
+| | *tx_fsm == TxRun ##[1:4],*       | |
+| |                                  | |
+| | *tx_fsm == TxDeact ##[1:4],*     | |
+| |                                  | |
+| | *tx_fsm == TxStop ##[1:4]*       | |
+| +==================================+ |
+| | **Effect (consequent):**         | |
+| |                                  | |
+| | *##1 tx_link_ok == 1’b1*         | |
+| +----------------------------------+ |
++======================================+
+| Figure N.                            |
++--------------------------------------+
+
+Property Layer
 --------------
 
 Verification Layer
@@ -367,50 +407,6 @@ definition is employed.
 | Figure N. Usage of default clocking and default reset                |
 +----------------------------------------------------------------------+
 
-=======================
-SystemVerilog Sequences
-=======================
-
-Sequences can be more complex than just Boolean values. Basic sequences
-can contain single delays (for example ##1 means one cycle delay) and
-bounded/unbounded range delays (the bounded sequence ##[1:10] means one
-to ten cycles later, the unbounded sequence ##[+] means one or more
-cycles later). Sequences can be enclosed within sequence … endsequence
-SVA constructs, or described directly in the property block. More basic
-and advanced sequences exist, but the description of them is outside of
-the scope of this document.
-
-For example, consider the following system requirement encoded as a
-property from the `AMBA 5 CHI
-Specification <https://developer.arm.com/documentation/ihi0050/c>`__,
-Figure 13-6: “If the tx_fsm transmit link sequence is TxStop, TxAct,
-TxRun, TxDeact and TxStop, the output the tx_link_ok will be asserted
-one cycle later. Each state transition must be performed between 1 and 4
-clock cycles”. This statement can be partitioned as shown below:
-
-+--------------------------------------+
-| +----------------------------------+ |
-| | **Sequence (antecedent/cause):** | |
-| |                                  | |
-| | *tx_fsm == TxStop ##[1:4],*      | |
-| |                                  | |
-| | *tx_fsm == TxAct ##[1:4],*       | |
-| |                                  | |
-| | *tx_fsm == TxRun ##[1:4],*       | |
-| |                                  | |
-| | *tx_fsm == TxDeact ##[1:4],*     | |
-| |                                  | |
-| | *tx_fsm == TxStop ##[1:4]*       | |
-| +==================================+ |
-| | **Effect (consequent):**         | |
-| |                                  | |
-| | *##1 tx_link_ok == 1’b1*         | |
-| +----------------------------------+ |
-+======================================+
-| Figure N.                            |
-+--------------------------------------+
-
-
 Now, to connect both cause and effect (or antecedent and consequent) the
 *implication* operation (|-> non-overlapping, \|=> overlapping) is used.
 For example, the sentence “When input a is set, b must also be set one
@@ -469,3 +465,5 @@ the advantages of SVA over the open source version of SBY.
 .. [4]
    Convergence in FPV is the process to have a full proof, which can be
    challenging for some designs.
+
+.. [5] Sequential Extended Regular Expressions.
