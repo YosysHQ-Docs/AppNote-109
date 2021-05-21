@@ -286,10 +286,10 @@ SVA Layers
 ----------
 A concurrent property is composed primarily of four layers:
 
-- Boolean.
-- Temporal or Sequence.
-- Property.
-- Verification.
+- Boolean layer.
+- Temporal or Sequence layer.
+- Property layer.
+- Verification layer.
 
 These layers gives SVA full expressiveness. More details are discussed in the
 following sections.
@@ -297,7 +297,7 @@ following sections.
 Boolean Layer
 -------------
 Concurrent properties can contain Boolean expressions that are composed of
-SystemVerilog expressions with some restrictions. These expressions are used
+SystemVerilog constructs with some restrictions _[5]. These expressions are used
 to express conditions or behaviors of the design. Consider the Figure 1.5 that
 represents the Boolean layer of a concurrent property extracted from AXI4-Stream.
 
@@ -318,7 +318,8 @@ bit in TSTRB high, otherwise the result will be `logic zero`.
 Temporal or Sequence Layer
 --------------------------
 The temporal layer express behaviors that can span over time, usually
-expressed using SERE-regular _[5] expressions known as *sequences*.
+expressed using SERE-regular _[6] expressions known as *sequences* that
+describes sequential behaviors used to build properties.
 
 SVA provides a set of powerful temporal operators that can be used to
 describe complex behaviors or conditions in different points of time.
@@ -328,7 +329,37 @@ can contain single delays (for example `##1` means one cycle delay) and
 bounded/unbounded range delays (the bounded sequence `##[1:10]` means one
 to ten cycles later, the unbounded sequence `##[+]` means one or more
 cycles later). Sequences can be enclosed within `sequence … endsequence`
-SVA constructs, or described directly in the property block.
+SVA constructs, or described directly in a property block.
+
+A sequence can be seen as a description that defines values over time,
+and unlike *properties* or *Boolean functions*, a sequence does not have
+true or false values but *matches* or *tight satisfaction* points. For
+example, the sequence *foo is followed by bar in one or two cycles* expressed
+in SVA as:
+
+.. code-block:: systemverilog
+
+   foo ##[1:2] bar
+
+Is shown in Figure 1.6. As can be seen, there are different match or tight
+satisfaction points:
+
+* When *foo* is true at cycle t2 and bar at cycle t3.
+* When *foo* is true at cycle t2 and bar at cycle t4.
+* When *foo* is true at cycle t2 and bar is true at cycle t3 and t4.
+
+There is also a case where sequence does not match, which is when
+*foo* is true at cycle t2 but *bar* is not seen during the next
+one or two cycles.
+
++----------------------------------------------------------------------+
+| .. image:: media/first_seq.png                                       |
+|    :width: 10.05cm                                                   |
+|    :height: 10.85cm                                                  |
+|    :align: center                                                    |
++======================================================================+
+| Figure 1.6. Example of sequence `foo ##[1:2] bar`.                   |
++----------------------------------------------------------------------+
 
 Some sequential property operators are discussed below.
 
@@ -379,8 +410,6 @@ Verification Layer
   environment is reused in simulation, the simulator will ignore the restriction.
   Otherwise, if an assumption had been used, the simulator would have failed because
   it cannot be guaranteed that certain opcode is the only one applied to the design.
-
-
 
 
 
@@ -443,4 +472,7 @@ the advantages of SVA over the open source version of SBY.
    Convergence in FPV is the process to have a full proof, which can be
    challenging for some designs.
 
-.. [5] Sequential Extended Regular Expressions.
+.. [5]
+   These restrictions are described in P1800 Section 16.6 Boolean expressions.
+
+.. [6] Sequential Extended Regular Expressions.
