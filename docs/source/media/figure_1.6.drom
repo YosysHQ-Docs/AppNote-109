@@ -1,0 +1,28 @@
+{signal: [
+  {name: 'clk',  wave: 'p......'},
+  [ 'No match',
+    {name: 'foo',  wave: '0.10...'},
+  	{name: 'bar',  wave: '0......'},
+  ],
+  {},
+  [ 'One match',
+   {name: 'foo',  wave: '0.10...', node: '..a'},
+   {name: 'bar',  wave: '0..10..', node: '...b'},
+  ],
+  {},
+  [ 'One match',
+   {name: 'foo',  wave: '0.10...', node: '..c'},
+   {name: 'bar',  wave: '0...10.', node: '....d'},
+  ],
+  {},
+  [ 'Two match',
+   {name: 'foo',  wave: '0.10...', node: '..e'},
+   {name: 'bar',  wave: '0..1.0.', node: '...fg'},
+  ],
+   {}
+],
+  head:{
+   tick:0,
+ },
+   edge: ['a~b t3', 'c~d t4', 'e~f t3', 'e~g t4'],
+}

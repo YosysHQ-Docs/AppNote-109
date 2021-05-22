@@ -5,7 +5,11 @@ Property Checking with SystemVerilog Assertions
 --------
 Abstract
 --------
-TBD
+This Application Note was written with the intention of
+showing a brief introduction to SVA, and is definitely not
+a substitute for extensive training. To learn more about
+formal verification and SVA, it is recommended to book the
+course given by FPV specialists at YosysHQ.
 
 ------------
 Organisation
@@ -341,7 +345,7 @@ in SVA as:
 
    foo ##[1:2] bar
 
-Is shown in Figure 1.6. As can be seen, there are different match or tight
+Is shown in Figure 1.6. As can be seen, there may be different match or tight
 satisfaction points:
 
 * When *foo* is true at cycle t2 and bar at cycle t3.
@@ -363,12 +367,31 @@ one or two cycles.
 
 Some sequential property operators are discussed below.
 
-Sequence Concatenation
-----------------------
+Sequence Operators Introduction
+-------------------------------
+The bounded operators `##m` and `##[m:n]` where *m* and *n* are integers,
+can be used to specify clock delays between two events. The Figure 1.6 is
+an example of usage of these operators. For the following sequence:
 
+.. code-block:: systemverilog
 
-Sequence Fusion
----------------
+   foo ##m bar
+
+If *m > 0* the sequence is split in two adjacent fragments, *concatenating*
+both *foo* and *bar* expressions. If *m == 0* both *foo* and *bar* overlaps,
+creating a *fusion* of both expressions. The sequence concatenation starts
+matching *bar* in the next clock cycle after *foo* matches. Whereas for
+sequence fusion, both *foo* and *bar* start matching at the same clock tick
+where *foo* matches. See Figure 1.7.
+
++-------------------------------------------------------------------------+
+| .. image:: media/concat_fusion.png                                      |
+|    :width: 10.05cm                                                      |
+|    :height: 5.29cm                                                      |
+|    :align: center                                                       |
++=========================================================================+
+| Figure 1.7. Illustration of sequence fusion and sequence concatenation. |
++-------------------------------------------------------------------------+
 
 
 Property Layer
@@ -475,4 +498,5 @@ the advantages of SVA over the open source version of SBY.
 .. [5]
    These restrictions are described in P1800 Section 16.6 Boolean expressions.
 
-.. [6] Sequential Extended Regular Expressions.
+.. [6]
+   Sequential Extended Regular Expressions.
