@@ -369,6 +369,10 @@ Some sequential property operators are discussed below.
 
 Sequence Operators Introduction
 -------------------------------
+
+Bounded Delay Operator
+----------------------
+
 The bounded operators `##m` and `##[m:n]` where *m* and *n* are integers,
 can be used to specify clock delays between two events. The Figure 1.6 is
 an example of usage of these operators. For the following sequence:
@@ -392,6 +396,23 @@ where *foo* matches. See Figure 1.7.
 +=========================================================================+
 | Figure 1.7. Illustration of sequence fusion and sequence concatenation. |
 +-------------------------------------------------------------------------+
+
+For a more concise example, consider the Figure 14-5 Combined Tx and Rx
+state machines from ARM IHI 0050E. To describe the transitions of the Tx Link
+FSM the following sequence can be used:
+
+.. code-block:: systemverilog
+
+   sequence tx_link_full;
+     fsm_lnk_ns.chi_tx_t == TxStop  ##[1:4]
+     fsm_lnk_ns.chi_tx_t == TxAct   ##[1:4]
+     fsm_lnk_ns.chi_tx_t == TxRun   ##[1:4]
+     fsm_lnk_ns.chi_tx_t == TxDeact ##[1:4]
+     fsm_lnk_ns.chi_tx_t == TxStop  ##[1:4]
+   endsequence
+
+Unbounded Delay Operator
+------------------------
 
 
 Property Layer
