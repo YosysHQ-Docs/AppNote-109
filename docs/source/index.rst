@@ -323,13 +323,13 @@ Temporal or Sequence Layer
 --------------------------
 The temporal layer express behaviors that can span over time, usually
 expressed using SERE-regular _[6] expressions known as *sequences* that
-describes sequential behaviors used to build properties.
+describes sequential behaviors that are employed to build properties.
 
 SVA provides a set of powerful temporal operators that can be used to
 describe complex behaviors or conditions in different points of time.
 
 Sequences can be more complex than just Boolean values. Basic sequences
-can contain single delays (for example `##1` means one cycle delay) and
+can contain single delays (for example `##1` that means one cycle delay) and
 bounded/unbounded range delays (the bounded sequence `##[1:10]` means one
 to ten cycles later, the unbounded sequence `##[+]` means one or more
 cycles later). Sequences can be enclosed within `sequence … endsequence`
@@ -365,15 +365,34 @@ one or two cycles.
 | Figure 1.6. Example of sequence `foo ##[1:2] bar`.                   |
 +----------------------------------------------------------------------+
 
-Some sequential property operators are discussed below.
+Sequences can be promoted to sequential properties if they are used in a
+property context (in other words, when used in property blocks). Starting
+from SV09, weak and strong sequential properties have been defined.
+*Strong* sequential properties hold if there is a non-empty match of the
+sequence (it must be witnessed), whereas a *weak* sequence holds if there
+is no finite prefix witnessing a no match (if the sequence never happens,
+the property holds).
 
-Sequence Operators Introduction
--------------------------------
+*Strong* sequential properties are identified by the prefix *s_* as
+in:
+* s_eventually.
+* s_until.
+* s_until_with.
+* s_always.
+
+Or enclosed within parenthesis followed by the keyword *strong* as in:
+* strong(s ##[1:10] n).
+
+Sequential properties have weak semantics by default. Some sequential
+property operators are discussed below.
+
+Basic Sequence Operators Introduction
+-------------------------------------
 
 Bounded Delay Operator
 ----------------------
 
-The bounded operators `##m` and `##[m:n]` where *m* and *n* are integers,
+The bounded operators `##m` and `##[m:n]` where *m* and *n* are non-negative integers,
 can be used to specify clock delays between two events. The Figure 1.6 is
 an example of usage of these operators. For the following sequence:
 
@@ -436,28 +455,25 @@ Unbounded Delay Operator
 ------------------------
 There are two operators for relaxed delay requirements:
 
-* Zero or more clock ticks: ##[0:$] (or the shorcut ##[*]).
-* One or more clock ticks: ##[1:$] (or the shorcut ##[+]).
+* Zero or more clock ticks: `##[0:$]` (or the shorcut `##[*]`).
+* One or more clock ticks: `##[1:$]` (or the shorcut `##[+]`).
 
-The formal semantics are the same as in the bounded delay operator, but this
-kind of expressions are useful, for example, to check forward progress of safety
-properties that could be satisfied by doing nothing. What does this means?, consider
+The formal semantics are the same as in the bounded delay operator. These operators
+are useful, for example, to check forward progress of safety
+properties that could be satisfied *by doing nothing*. What does this means?, consider
 the VALID/READY handshake defined in **ARM IHI 0022E Page A3-9** (better known as
 AXI-4 specification). A potential deadlock can happen when VALID signal is asserted
-but READY is never asserted. If no property checks for this specific case, then the result
-is *vacuous*.
-
-If the property shown in Figure 1.8 is part of a design where READY is not asserted, the
-property will pass vacuously.
+but READY is never asserted. If the property shown in Figure 1.8 is part of a design
+where READY is deasserted forever after VALID has been asserted, the property will
+pass vacuously.
 
 +----------------------------------------------------------------------+
 | .. literalinclude:: ./child/rdwr_response_exokay.sv                  |
 |     :language: systemverilog                                         |
-|     :lines: 1-13                                                     |
+|     :lines: 1-14                                                     |
 +======================================================================+
-| Figure 1.8. Usage of default clocking and default disable events used|
-| to state that all concurrent properties are checked each *posedge*   |
-| PCLK and disabled if the *PRSTn* reset is deasserted.                |
+| Figure 1.8. A property that monitors the EXOKAY response value when  |
+| VALID and READY are asserted.                                        |
 +----------------------------------------------------------------------+
 
 To check that the system is actually making progress, the property using *one or
@@ -467,11 +483,11 @@ then the FPV user can deduce that property of Figure 1.8 is not healthy.
 +----------------------------------------------------------------------+
 | .. literalinclude:: ./child/deadlock.sv                              |
 |     :language: systemverilog                                         |
-|     :lines: 1-13                                                     |
+|     :lines: 1-14                                                     |
 +======================================================================+
-| Figure 1.9. Usage of default clocking and default disable events used|
-| to state that all concurrent properties are checked each *posedge*   |
-| PCLK and disabled if the *PRSTn* reset is deasserted.                |
+| Figure 1.9. A property that checks for a deadlock condition. If VALID|
+| is asserted and READY is not asserted in *timeout* non-negative      |
+| cycles, the property will be unsuccessful.                           |
 +----------------------------------------------------------------------+
 
 .. note::
@@ -479,18 +495,17 @@ then the FPV user can deduce that property of Figure 1.8 is not healthy.
    because the unbounded operator employed in the property definition has
    weak semantics. A better solution could be to make this property *strong*
    but this implies that this *safety* property will be converted into a *liveness*
-   one. Strong, weak, liveness and safety concepts are described in *Property Layer*
-   section.
+   one. Liveness and safety concepts are described in *Property Layer* section.
 
 Consecutive Repetition
 ----------------------
 Imagine the following property from an SDRAM controller (JESDEC 21-C): The WR (write) command
-can be followed by a PRE (precharge) command in a minimum of tWR cycles. If *tWR == 15ns*
-and the system clock period is 1ns, then the property can be described as follows:
+can be followed by a PRE (precharge) command in a minimum of tWR cycles. If *tWR == 15*
+then the property can be described as follows:
 
 .. code-block:: systemverilog
 
-    let notCMDPRE = !(cmd == PRE && bank == nd_bank);
+    let notCMDPRE = (!cmd == PRE) && bank == nd_bank;
     // notCMDPRE must hold 15 times after WR command is seen
     property cmdWR_to_cmdPRE;
       cmd == WR && bank == nd_bank |-> ##1 notCMDPRE ##1 notCMDPRE ##1 notCMDPRE
@@ -498,28 +513,61 @@ and the system clock period is 1ns, then the property can be described as follow
                                        ... ##1 notCMDPRE ##1 notCMDPRE;
     endproperty
 
-This is too verbose, not elegant. SVA has a construct to define that an expression
-must hold for *m* consecutive cycles, the consecutive repetition operator *[\*m]*.
-The same property can be now described as follows:
+This is too verbose and not an elegant solution. SVA has a construct to define that
+an expression must hold for *m* consecutive cycles: the consecutive repetition
+operator *[\*m]*. The same property can be described using the consecutive
+repetition operator as follows:
 
 .. code-block:: systemverilog
 
-    let notCMDPRE = !(cmd == PRE && bank == nd_bank);
+    let notCMDPRE = (!cmd == PRE) && bank == nd_bank;
     // notCMDPRE must hold 15 times after WR command is seen
     property cmdWR_to_cmdPRE;
-      cmd == WR && bank == nd_bank |-> ##1 notCMDPRE [*15-1];
+      cmd == WR && bank == nd_bank |-> ##1 notCMDPRE [*15];
     endproperty
 
-And if the tWR value is set as a parameter, then this can be further
-reduced to:
+And if the tWR value is set as a parameter, then this can be further reduced to:
 
 .. code-block:: systemverilog
 
-   cmd == WR && bank == nd_bank |-> ##1 notCMDPRE [*tWR-1];
+   cmd == WR && bank == nd_bank |-> ##1 notCMDPRE [*tWR];
+
+.. note::
+   The *nd_bank* expression is a non-deterministic value choosen by the
+   formal solver as a symbolic variable. A symbolic variable is a variable
+   that takes any valid value in the initial state and then is kept stable.
+   This variable is useful to track a single arbitrary instance of a design
+   where properties are defined for multiple symmetric units.
+
+As with delay operators, sequence repetition constructs have some variants
+such as:
+
+* **Consecutive repetition range `s[\*m:n]`**: The sequence *s* occurs from
+  m to n times.
+* **Infinite repetition range `s[\*]`**: The sequence *s* is repeated zero or more times.
+* **Infinite repetition range `s[+]`**: The sequence *s* is repeated one or more times.
+* **Nonconsecutive repetition operator `s[=m:n]`**: The sequence *s* occurs
+  exactly from n to m times and *s is not required to be the last element*.
+* **GoTo repetition operator `s[->m:n]`**: The sequence *s* occurs
+  exactly from n to m times and *s is required to be the last element*.
+
+.. note::
+   Not all sequential property operators are FPV friendly:
+
+   * GoTo and nonconsecutive operators.
+   * Throughout.
+   * Intersect.
+   * first_match().
+   * Within.
+   * Etc.
+
+   These operators increases the complexity of the model and may cause that some
+   assertions not converge.
 
 
 Property Layer
 --------------
+The expressiveness of the property layer
 
 
 Verification Layer
