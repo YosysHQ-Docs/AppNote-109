@@ -381,12 +381,12 @@ an example of usage of these operators. For the following sequence:
 
    foo ##m bar
 
-If *m > 0* the sequence is split in two adjacent fragments, *concatenating*
+If *m == 1* the sequence is split in two adjacent fragments, *concatenating*
 both *foo* and *bar* expressions. If *m == 0* both *foo* and *bar* overlaps,
 creating a *fusion* of both expressions. The sequence concatenation starts
 matching *bar* in the next clock cycle after *foo* matches. Whereas for
 sequence fusion, both *foo* and *bar* start matching at the same clock tick
-where *foo* matches. See Figure 1.7.
+where *foo* matches. See Figure 1.7 for a better understanding.
 
 +-------------------------------------------------------------------------+
 | .. image:: media/concat_fusion.png                                      |
@@ -399,10 +399,15 @@ where *foo* matches. See Figure 1.7.
 
 For a more concise example, consider the Figure 14-5 Combined Tx and Rx
 state machines from ARM IHI 0050E. To describe the transitions of the Tx Link
-FSM the following sequence can be used:
+FSM the following sequence can be defined:
 
 .. code-block:: systemverilog
 
+   /* TX FSM should transition from TxStop
+    * to TxAct in one to four cycles. And
+    * in the same way with the other states
+    * of the FSM, fulfilling the transitions
+    * shown in Figure 14-5. */
    sequence tx_link_full;
      fsm_lnk_ns.chi_tx_t == TxStop  ##[1:4]
      fsm_lnk_ns.chi_tx_t == TxAct   ##[1:4]
@@ -411,12 +416,111 @@ FSM the following sequence can be used:
      fsm_lnk_ns.chi_tx_t == TxStop  ##[1:4]
    endsequence
 
+This sequence *tx_link_full* describes the transition of the Tx Link FSM from TxStop
+up to TxStop that precedes TxDeact. This sequence can be used in a cover or assert
+construct to verify that the design implements correctly the Tx Link, or to show
+a witness of this transition. For example, to find a trace in a design where these
+transitions are fulfilled, a cover construct such as the one shown below can be employed:
+
+.. code-block:: systemverilog
+
+    wp_full_tx: cover property (@(posedge ACLK) disable iff (!ARESETn) tx_link_full);
+
+
+.. note::
+   For FPV, it is always recommended to keep the cycle window small as possible
+   since this impacts the performance of the proof.
+
+
 Unbounded Delay Operator
 ------------------------
+There are two operators for relaxed delay requirements:
+
+* Zero or more clock ticks: ##[0:$] (or the shorcut ##[*]).
+* One or more clock ticks: ##[1:$] (or the shorcut ##[+]).
+
+The formal semantics are the same as in the bounded delay operator, but this
+kind of expressions are useful, for example, to check forward progress of safety
+properties that could be satisfied by doing nothing. What does this means?, consider
+the VALID/READY handshake defined in **ARM IHI 0022E Page A3-9** (better known as
+AXI-4 specification). A potential deadlock can happen when VALID signal is asserted
+but READY is never asserted. If no property checks for this specific case, then the result
+is *vacuous*.
+
+If the property shown in Figure 1.8 is part of a design where READY is not asserted, the
+property will pass vacuously.
+
++----------------------------------------------------------------------+
+| .. literalinclude:: ./child/rdwr_response_exokay.sv                  |
+|     :language: systemverilog                                         |
+|     :lines: 1-13                                                     |
++======================================================================+
+| Figure 1.8. Usage of default clocking and default disable events used|
+| to state that all concurrent properties are checked each *posedge*   |
+| PCLK and disabled if the *PRSTn* reset is deasserted.                |
++----------------------------------------------------------------------+
+
+To check that the system is actually making progress, the property using *one or
+more clock ticks* operator shown in Figure 1.9 can be used. If this property fails,
+then the FPV user can deduce that property of Figure 1.8 is not healthy.
+
++----------------------------------------------------------------------+
+| .. literalinclude:: ./child/deadlock.sv                              |
+|     :language: systemverilog                                         |
+|     :lines: 1-13                                                     |
++======================================================================+
+| Figure 1.9. Usage of default clocking and default disable events used|
+| to state that all concurrent properties are checked each *posedge*   |
+| PCLK and disabled if the *PRSTn* reset is deasserted.                |
++----------------------------------------------------------------------+
+
+.. note::
+   The property of Figure 1.9 can still fail in certain scenarios. This is
+   because the unbounded operator employed in the property definition has
+   weak semantics. A better solution could be to make this property *strong*
+   but this implies that this *safety* property will be converted into a *liveness*
+   one. Strong, weak, liveness and safety concepts are described in *Property Layer*
+   section.
+
+Consecutive Repetition
+----------------------
+Imagine the following property from an SDRAM controller (JESDEC 21-C): The WR (write) command
+can be followed by a PRE (precharge) command in a minimum of tWR cycles. If *tWR == 15ns*
+and the system clock period is 1ns, then the property can be described as follows:
+
+.. code-block:: systemverilog
+
+    let notCMDPRE = !(cmd == PRE && bank == nd_bank);
+    // notCMDPRE must hold 15 times after WR command is seen
+    property cmdWR_to_cmdPRE;
+      cmd == WR && bank == nd_bank |-> ##1 notCMDPRE ##1 notCMDPRE ##1 notCMDPRE
+                                       ##1 notCMDPRE ##1 notCMDPRE ##1 notCMDPRE
+                                       ... ##1 notCMDPRE ##1 notCMDPRE;
+    endproperty
+
+This is too verbose, not elegant. SVA has a construct to define that an expression
+must hold for *m* consecutive cycles, the consecutive repetition operator *[\*m]*.
+The same property can be now described as follows:
+
+.. code-block:: systemverilog
+
+    let notCMDPRE = !(cmd == PRE && bank == nd_bank);
+    // notCMDPRE must hold 15 times after WR command is seen
+    property cmdWR_to_cmdPRE;
+      cmd == WR && bank == nd_bank |-> ##1 notCMDPRE [*15-1];
+    endproperty
+
+And if the tWR value is set as a parameter, then this can be further
+reduced to:
+
+.. code-block:: systemverilog
+
+   cmd == WR && bank == nd_bank |-> ##1 notCMDPRE [*tWR-1];
 
 
 Property Layer
 --------------
+
 
 Verification Layer
 ------------------
@@ -456,6 +560,10 @@ Verification Layer
   it cannot be guaranteed that certain opcode is the only one applied to the design.
 
 
+.. note::
+   For simulation, properties works as monitors that checks the traffic/behavior
+   of the test vectors applied to the design under test. For FPV, properties are
+   non-deterministic since all possible values are used to check a proof.
 
 Now, to connect both cause and effect (or antecedent and consequent) the
 *implication* operation (|-> non-overlapping, \|=> overlapping) is used.
