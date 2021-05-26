@@ -389,7 +389,7 @@ where they are used:
 
 * **Weak** when the sequence is used in *assert* or *assume* directive.
 * **Strong** in all other cases.
- 
+
 Some sequential property operators are discussed below.
 
 Basic Sequence Operators Introduction
@@ -677,7 +677,8 @@ is the most used type of property in FPV because it is less complicated for
 a solver to find a proof, compared to the *liveness* case (for example,
 by proving inductively that the property is an invariant).
 
-There might be results of a safety property:
+These might be the results of a safety property:
+
 * A full proof is reached, meaning that the solver can guarantee that
   a "bad thing" can never happen.
 * A bounded proof showing that the "bad thing" cannot happen in a certain
@@ -699,10 +700,61 @@ is shown below:
 
 Liveness Properties
 -------------------
+A liveness property checks that something good eventually happens. This
+kind of properties are more complex to check in FPV because, in contrast
+with safety properties where CEX can be found in a single state,
+for liveness properties this is not the case, since to find a CEX,
+sufficient evidence is needed that the "good thing" could be postponed forever,
+and sometimes an auxiliary property is needed to help the solver understand that
+there is some progress ongoing (fairness assumption).
+
+A safety property can be trivially proven by doing nothing, because this
+will never lead to a scenario where a "bad thing" occurs. A liveness property
+can point out that a system is not making any progress w.r.t the functionality
+and time-lapse of the data that the design is supposed to provide.
+
+An example of a liveness property is from the classic arbiter problem that
+states that *every request must be eventually granted*, that can be described
+in SVA as follows:
+
+.. code-block:: systemverilog
+
+    property liveness_obligation_arbiter;
+      req |=> s_eventually gnt
+    endproperty
+
+Another example of a liveness property that defines that a handshake must
+eventually occur between a sender and a receiver, from the IHI0022E AMBA
+and AXI protocol spec, is shown below.
+
++----------------------------------------------------------------------+
+| .. literalinclude:: ./child/deadlock.sv                              |
+|     :language: systemverilog                                         |
+|     :lines: 16-29                                                    |
++======================================================================+
+| Figure 1.12. Using a liveness property to check for deadlock         |
+| conditions. This is a very common practice.                          |
++----------------------------------------------------------------------+
+
+A deep explanation of how a solver of a FPV tool finds a liveness CEX is
+outside of the scope of this application note, but for the sake of clarity,
+consider the Figure 1.13.
+
++-------------------------------------------------------------------------+
+| .. image:: media/liveness.png                                           |
+|    :width: 15.92cm                                                      |
+|    :height: 4.2cm                                                       |
+|    :align: center                                                       |
++=========================================================================+
+| Figure 1.13. A very simplistic example of liveness resolution.          |
++-------------------------------------------------------------------------+
 
 
 Verification Layer
 ------------------
+A property by himself does not execute any check unless is instantiated with
+a verification statement. A property can be used with the following verification
+directives:
 
 - **assert:** Specifies *validity*, *correctness*, or a behavior that a
   system or design is obligated to implement. When using the *assert*
@@ -737,6 +789,16 @@ Verification Layer
   environment is reused in simulation, the simulator will ignore the restriction.
   Otherwise, if an assumption had been used, the simulator would have failed because
   it cannot be guaranteed that certain opcode is the only one applied to the design.
+
+----------------------------
+More Advanced SVA Constructs
+----------------------------
+
+Checkers
+--------
+
+SVA IP
+------
 
 
 .. note::
