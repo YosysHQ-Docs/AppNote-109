@@ -582,7 +582,7 @@ A property construct can have formal arguments as shown in Figure 1.8 and Figure
 that are expanded when the property is instantiated with the proper arguments. Properties
 can also have no arguments.
 
-The P1800 defines several kinds of properties that are listed below:
+The P1800 defines several kinds of properties of which some are shown below:
 
 * **Sequence**: As described in Section Temporal or Sequence Layer, a sequence
   property have three forms namely *sequence_expression*, *weak(sequence_expression)*
@@ -604,7 +604,71 @@ The P1800 defines several kinds of properties that are listed below:
   (expression in LHS or antecedent) to an effect (expression in RHS or consequent).
   More about this type of property is described in **YosysHQ AppNote 120 -- Weak
   precondition cover and witness for SVA properties.**
-* **Instantiation**:
+
+The rest of the kinds of properties are better explained with a graph as shown
+below.
+
+.. note::
+   There are different versions of the following properties. Refer to **P1800
+   (2017) Section 16.12 Declaring properties** for more information.
+
+**Nexttime property**
+This property evaluates to true if the property expression *p* is true
+in the next clock cycle.
+
++-------------------------------------------------------------------------+
+| .. image:: media/nexttime.png                                           |
+|    :width: 15.92cm                                                      |
+|    :height: 6.46cm                                                      |
+|    :align: center                                                       |
++=========================================================================+
+| Figure 1.10. The property *nexttime p*  holds if *p* is true in the next|
+| clock cycle.                                                            |
++-------------------------------------------------------------------------+
+
+
+**Always property**
+This property evaluates to true if the expression *p* holds at all states.
+
++-------------------------------------------------------------------------+
+| .. image:: media/always.png                                             |
+|    :width: 15.92cm                                                      |
+|    :height: 6.46cm                                                      |
+|    :align: center                                                       |
++=========================================================================+
+| Figure 1.10. The property *always p*  is also known as *invariance      |
+| property* or simply *invariant*.                                        |
++-------------------------------------------------------------------------+
+
+**Eventually property**
+This property evaluates to true if the expression *p* holds at some time
+in the future.
+
++-------------------------------------------------------------------------+
+| .. image:: media/eventually.png                                         |
+|    :width: 15.92cm                                                      |
+|    :height: 6.46cm                                                      |
+|    :align: center                                                       |
++=========================================================================+
+| Figure 1.10. The property *eventually p* can be used to check for       |
+| progress during proof evaluation.                                       |
++-------------------------------------------------------------------------+
+
+**Until property**
+The property *p until q* is true starting from an initial point if *q*
+is true in some reachable state from the initial state, and *p* is true
+in all states until *q* is asserted.
+
++-------------------------------------------------------------------------+
+| .. image:: media/until.png                                              |
+|    :width: 15.92cm                                                      |
+|    :height: 6.46cm                                                      |
+|    :align: center                                                       |
++=========================================================================+
+| Figure 1.10. The property *eventually p* can be used to check for       |
+| progress during proof evaluation.                                       |
++-------------------------------------------------------------------------+
+
 
 
 Verification Layer
