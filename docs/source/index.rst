@@ -64,7 +64,7 @@ specified by the Assertions Committee (SV-AC).
 .. note::
     The SVA and PSL (Property Specification Language) are the results
     from different efforts that started with the standardisation of
-    temporal logic for use in the hardware design and verification
+    temporal logics for use in the hardware design and verification
     usage that *Accelera Formal Verification Technical Committee*
     started around 1998.
 
@@ -367,7 +367,7 @@ one or two cycles.
 
 Sequences can be promoted to sequential properties if they are used in a
 property context (in other words, when used in property blocks). Starting
-from SV09, weak and strong sequential properties have been defined.
+from SV09, *weak* and *strong* operators have been defined.
 *Strong* sequential properties hold if there is a non-empty match of the
 sequence (it must be witnessed), whereas a *weak* sequence holds if there
 is no finite prefix witnessing a no match (if the sequence never happens,
@@ -383,8 +383,14 @@ in:
 Or enclosed within parenthesis followed by the keyword *strong* as in:
 * strong(s ##[1:10] n).
 
-Sequential properties have weak semantics by default. Some sequential
-property operators are discussed below.
+The evaluation of sequential properties (if they are weak or strong) when the
+*weak* or *strong* operands are omitted depends on the verification directive
+where they are used:
+
+* **Weak** when the sequence is used in *assert* or *assume* directive.
+* **Strong** in all other cases.
+ 
+Some sequential property operators are discussed below.
 
 Basic Sequence Operators Introduction
 -------------------------------------
@@ -567,7 +573,38 @@ such as:
 
 Property Layer
 --------------
-The expressiveness of the property layer
+The property layer is where all the expressiveness of SVA starts to take shape. In
+this layer, Boolean constructs, sequences and property operators are used to
+encapsulate the behavior of the design within `property ... endproperty` blocks
+that will be further utilised by the *verification layer* to perform certain task.
+
+A property construct can have formal arguments as shown in Figure 1.8 and Figure 1.9,
+that are expanded when the property is instantiated with the proper arguments. Properties
+can also have no arguments.
+
+The P1800 defines several kinds of properties that are listed below:
+
+* **Sequence**: As described in Section Temporal or Sequence Layer, a sequence
+  property have three forms namely *sequence_expression*, *weak(sequence_expression)*
+  and *strong(sequence_expression)*. Remember that a sequence is promoted to a sequence
+  property if the sequence expression is used in property context.
+* **Negation**: This property uses the **not** *property_expression* operator to basically
+  evaluate to true if *property_expression* is false.
+* **Disjunction**: A property of the form *property_expression1* **or**
+  *property_expression2* evaluates to true if at least one of the property expressions
+  evaluates to true.
+* **Conjunction:**: A property of the form *property_expression1* **and**
+  *property_expression2* evaluates to true if the two property expressions
+  evaluates to true.
+* **If-else**: This property has the form **if (condition)** *property_expression1* **else**
+  *property_expression2* and can be seen as a mechanism to select a valid property based on
+  a certain condition.
+* **Implication**: One of the most used kinds of properties in ABV. This property has the
+  form **sequence_expression** *|=> or |->* **property_expression** that connects the cause
+  (expression in LHS or antecedent) to an effect (expression in RHS or consequent).
+  More about this type of property is described in **YosysHQ AppNote 120 -- Weak
+  precondition cover and witness for SVA properties.**
+* **Instantiation**:
 
 
 Verification Layer
@@ -613,43 +650,6 @@ Verification Layer
    of the test vectors applied to the design under test. For FPV, properties are
    non-deterministic since all possible values are used to check a proof.
 
-Now, to connect both cause and effect (or antecedent and consequent) the
-*implication* operation (|-> non-overlapping, \|=> overlapping) is used.
-For example, the sentence “When input a is set, b must also be set one
-cycle later” is expressed using the implication operation as follows:
-
-+----------------------------------------------------------------------+
-| a_implies_b: assert property (a \|-> ##1 b); // Overlapping operator |
-|                                                                      |
-| a_implies_b: assert property (a \|=> b); // Non-overlapping operator |
-+======================================================================+
-| Figure N.                                                            |
-+----------------------------------------------------------------------+
-
-With this information, the property “If the tx_fsm transmit link
-sequence is TxStop, TxAct, TxRun, TxDeact and TxStop, the output the
-tx_link_ok will be asserted one cycle later. Each state transition must
-be performed between 1 and 4 clock cycles” can be described as follows:
-
-+------------------------------------------------------------------------+
-| *tx_full_path: assert property (@(posedge ACLK) disable if (!ARESETn)* |
-|                                                                        |
-| *tx_fsm == TxStop ##[1:4],*                                            |
-|                                                                        |
-| *tx_fsm == TxAct ##[1:4],*                                             |
-|                                                                        |
-| *tx_fsm == TxRun ##[1:4],*                                             |
-|                                                                        |
-| *tx_fsm == TxDeact ##[1:4],*                                           |
-|                                                                        |
-| *tx_fsm == TxStop ##[1:4] \|-> ##1 tx_link_ok == 1’b1);*               |
-+========================================================================+
-| Figure N.                                                              |
-+------------------------------------------------------------------------+
-
-This property in SVA describes easily a transition of events that
-otherwise may be implemented in a (System)Verilog FSM and shows one of
-the advantages of SVA over the open source version of SBY.
 
 .. [1]
    Unfortunately, the definition of “assertion” is not consistent in the
