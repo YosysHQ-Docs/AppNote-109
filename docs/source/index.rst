@@ -670,6 +670,36 @@ in all states until *q* is asserted.
 +-------------------------------------------------------------------------+
 
 
+Safety Properties
+-----------------
+A safety property, in short, checks that something bad never happens. It
+is the most used type of property in FPV because it is less complicated for
+a solver to find a proof, compared to the *liveness* case (for example,
+by proving inductively that the property is an invariant).
+
+There might be results of a safety property:
+* A full proof is reached, meaning that the solver can guarantee that
+  a "bad thing" can never happen.
+* A bounded proof showing that the "bad thing" cannot happen in a certain
+  number of cycles.
+* A counterexample of finite prefix showing the path where the "bad thing"
+  happens.
+
+An example of a safety property extracted from IHI0051A amba4 axi4 stream
+is shown below:
+
++----------------------------------------------------------------------+
+| .. literalinclude:: ./child/tvalid_tready.sv                         |
+|     :language: systemverilog                                         |
+|     :lines: 1-14                                                     |
++======================================================================+
+| Figure 1.11. A safety property to state that a packet should not be  |
+| dropped if the receiver cannot process it.                           |
++----------------------------------------------------------------------+
+
+Liveness Properties
+-------------------
+
 
 Verification Layer
 ------------------
