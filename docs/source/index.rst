@@ -301,7 +301,7 @@ following sections.
 Boolean Layer
 -------------
 Concurrent properties can contain Boolean expressions that are composed of
-SystemVerilog constructs with some restrictions _[5]. These expressions are used
+SystemVerilog constructs with some restrictions [5]_. These expressions are used
 to express conditions or behaviors of the design. Consider Figure 1.5 that
 represents the Boolean layer of a concurrent property extracted from AXI4-Stream.
 
@@ -322,12 +322,45 @@ bit in TSTRB high, otherwise the result will be `logic zero`.
 Temporal or Sequence Layer
 --------------------------
 The temporal layer express behaviors that can span over time, usually
-expressed using SERE-regular _[6] expressions known as *sequences* that
+expressed using SERE-regular [6]_ expressions known as *sequences* that
 describes sequential behaviors that are employed to build properties.
 
 SVA provides a set of powerful temporal operators that can be used to
 describe complex behaviors or conditions in different points of time.
 
+Sequences can be promoted to sequential properties if they are used in a
+property context (in other words, when used in property blocks). Starting
+from SV09, *weak* and *strong* operators have been defined.
+*Strong* sequential properties hold if there is a non-empty match of the
+sequence (it must be witnessed), whereas a *weak* sequence holds if there
+is no finite prefix witnessing a no match (if the sequence never happens,
+the property holds).
+
+*Strong* sequential properties are identified by the prefix *s_* as
+in:
+
+* s_eventually.
+* s_until.
+* s_until_with.
+* s_always.
+
+Or enclosed within parenthesis followed by the keyword *strong* as in:
+* strong(s ##[1:$] n).
+
+The evaluation of sequential properties (if they are weak or strong) when the
+*weak* or *strong* operands are omitted depends on the verification directive
+where they are used:
+
+* **Weak** when the sequence is used in *assert* or *assume* directive.
+* **Strong** in all other cases.
+
+Some sequential property operators are discussed below.
+
+Basic Sequence Operators Introduction
+-------------------------------------
+
+Bounded Delay Operator
+----------------------
 Sequences can be more complex than just Boolean values. Basic sequences
 can contain single delays (for example `##1` that means one cycle delay) and
 bounded/unbounded range delays (the bounded sequence `##[1:10]` means one
@@ -364,39 +397,6 @@ one or two cycles.
 +======================================================================+
 | Figure 1.6. Example of sequence `foo ##[1:2] bar`.                   |
 +----------------------------------------------------------------------+
-
-Sequences can be promoted to sequential properties if they are used in a
-property context (in other words, when used in property blocks). Starting
-from SV09, *weak* and *strong* operators have been defined.
-*Strong* sequential properties hold if there is a non-empty match of the
-sequence (it must be witnessed), whereas a *weak* sequence holds if there
-is no finite prefix witnessing a no match (if the sequence never happens,
-the property holds).
-
-*Strong* sequential properties are identified by the prefix *s_* as
-in:
-* s_eventually.
-* s_until.
-* s_until_with.
-* s_always.
-
-Or enclosed within parenthesis followed by the keyword *strong* as in:
-* strong(s ##[1:10] n).
-
-The evaluation of sequential properties (if they are weak or strong) when the
-*weak* or *strong* operands are omitted depends on the verification directive
-where they are used:
-
-* **Weak** when the sequence is used in *assert* or *assume* directive.
-* **Strong** in all other cases.
-
-Some sequential property operators are discussed below.
-
-Basic Sequence Operators Introduction
--------------------------------------
-
-Bounded Delay Operator
-----------------------
 
 The bounded operators `##m` and `##[m:n]` where *m* and *n* are non-negative integers,
 can be used to specify clock delays between two events. The Figure 1.6 is
@@ -518,6 +518,12 @@ then the property can be described as follows:
                                        ##1 notCMDPRE ##1 notCMDPRE ##1 notCMDPRE
                                        ... ##1 notCMDPRE ##1 notCMDPRE;
     endproperty
+
+.. note::
+   The *let* declaration serves as customization and can be used as a replacement
+   for text macros, but with a local scope. Also, unlike the compiler directives
+   `ifdef,` ifndef, etc, the *let* construct is part of the SystemVerilog language,
+   so it is safer to use than macros.
 
 This is too verbose and not an elegant solution. SVA has a construct to define that
 an expression must hold for *m* consecutive cycles: the consecutive repetition
@@ -709,9 +715,10 @@ and sometimes an auxiliary property is needed to help the solver understand that
 there is some progress ongoing (fairness assumption).
 
 A safety property can be trivially proven by doing nothing, because this
-will never lead to a scenario where a "bad thing" occurs. A liveness property
-can point out that a system is not making any progress w.r.t the functionality
-and time-lapse of the data that the design is supposed to provide.
+will never lead to a scenario where a "bad thing" occurs. A liveness
+property complements safety properties, but they are more difficult to prove
+because the solver needs to guarantee that something will happen infinitely
+many times.
 
 An example of a liveness property is from the classic arbiter problem that
 states that *every request must be eventually granted*, that can be described
@@ -754,7 +761,7 @@ liveness property analysis.
 Verification Layer
 ------------------
 A property by himself does not execute any check unless is instantiated with
-a verification statement. In section *Property Layer* results of property
+a verification statement. In section :ref:`Property Layer` results of property
 evaluation are constantly mentioned. Those values and conditions applies
 when the property is used with the verification directives listed below:
 
@@ -805,7 +812,7 @@ following construct can now be defined using all the SVA layers:
 +----------------------------------------------------------------------+
 | .. literalinclude:: ./child/deadlock.sv                              |
 |     :language: systemverilog                                         |
-|     :lines: 31-32                                                    |
+|     :lines: 31-34                                                    |
 +======================================================================+
 | Figure 1.14. Using the AXI deadlock property as an assertion.        |
 +----------------------------------------------------------------------+
@@ -846,18 +853,13 @@ shown in Figure 1.12 the following code can be used:
      default clocking fpv_clk @(posedge ACLK); endclocking
      default disable iff(!ARESETn);
 
-     property handshake_max_wait(valid_seq, ready, timeout);
-      valid_seq |-> strong(##[1:$]) ready;
+     property handshake_max_wait(valid_seq, ready);
+      valid_seq |=> s_eventually ready;
      endproperty // handshake_max_wait
 
      deadlock_free: assert property(handshake_max_wait(handshake_start, handshake_end));
    endchecker
 
-
-
-=====
-Notes
-=====
 
 
 .. [1]

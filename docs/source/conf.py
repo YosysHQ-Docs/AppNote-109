@@ -18,3 +18,6 @@ html_css_files = [
 # code blocks style 
 pygments_style = 'colorful'
 highlight_language = 'systemverilog'
+
+# Internal References
+extensions = ['sphinx.ext.autosectionlabel']

@@ -24,9 +24,11 @@
     *  \ |  I| /   property works fine.                               *
     *   \|===|/                                                       *
     *    '---'                                                        */
-   property handshake_max_wait(valid, ready, timeout);
+   property handshake_max_wait(valid, ready);
       valid & !ready |-> strong(##[1:$]) ready;
    endproperty // handshake_max_wait
 
-   ap_AW_SRC_DST_READY_MAXWAIT: assert property(disable iff (!ARESETn) handshake_max_wait(AWVALID, AWREADY, cfg.MAXWAIT))
-             else $error("Violation: AWREADY should be asserted within MAXWAIT cycles of AWVALID being asserted (AMBA recommended).");
+   ap_AW_SRC_DST_READY_MAXWAIT: assert property(disable iff (!ARESETn) 
+                                                handshake_max_wait(AWVALID, AWREADY))
+                                else $error("Violation: AWREADY should be asserted within MAXWAIT cycles",
+		                            " of AWVALID being asserted (AMBA recommended).");
