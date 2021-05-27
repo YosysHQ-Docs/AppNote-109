@@ -218,7 +218,7 @@ Concurrent Assertions
 ---------------------
 The concurrent assertions capture sequences of events that span over time,
 that is, they have a temporal domain that is evaluated at each clock tick
-or time step of the system. A concurrent assertion rises the level of
+or time step of the system. A concurrent assertion raises the level of
 abstraction of SystemVerilog due the transactional nature of this construct.
 
 Only in terms of FPV, an immediate assertion could mimic a concurrent assertion
@@ -226,7 +226,7 @@ if certain helper logic is created such that it generates the notion of
 *progress*. This logic of course may not be correct and can be quite complex
 depending on the property expression to be described, so it needs to be verified
 along with the property that this logic is supposed to describe. This method is
-not suggested as it could add an extra verification task to the design, that can
+not suggested as it could add an extra verification task to the design that can
 be avoided using SVA.
 
 .. note::
@@ -295,14 +295,14 @@ A concurrent property is composed primarily of four layers:
 - Property layer.
 - Verification layer.
 
-These layers gives SVA full expressiveness. More details are discussed in the
+These layers makes SVA very expressive. More details are discussed in the
 following sections.
 
 Boolean Layer
 -------------
 Concurrent properties can contain Boolean expressions that are composed of
 SystemVerilog constructs with some restrictions _[5]. These expressions are used
-to express conditions or behaviors of the design. Consider the Figure 1.5 that
+to express conditions or behaviors of the design. Consider Figure 1.5 that
 represents the Boolean layer of a concurrent property extracted from AXI4-Stream.
 
 +-------------------------------------------------------------------------+
