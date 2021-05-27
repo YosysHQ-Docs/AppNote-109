@@ -599,7 +599,7 @@ The P1800 defines several kinds of properties of which some are shown below:
 * **Disjunction**: A property of the form *property_expression1* **or**
   *property_expression2* evaluates to true if at least one of the property expressions
   evaluates to true.
-* **Conjunction:**: A property of the form *property_expression1* **and**
+* **Conjunction**: A property of the form *property_expression1* **and**
   *property_expression2* evaluates to true if the two property expressions
   evaluates to true.
 * **If-else**: This property has the form **if (condition)** *property_expression1* **else**
