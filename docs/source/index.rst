@@ -54,7 +54,7 @@ This increased the adoption of SVA in the industry.
 In *SVA 3.1a*, both immediate and concurrent assertions were defined as
 part of the standard. There were many conflicts and weaknesses in some
 language features that were fixed in SVA2009. Different companies have
-worked to improve the semantics and syntax of SVA to make it into how it
+worked to improve the semantics and syntax of SVA to make it into what it
 is today.
 
 The SVA (SystemVerilog Assertions) specification is part of the P1800.
@@ -63,7 +63,7 @@ specified by the Assertions Committee (SV-AC).
 
 .. note::
     The SVA and PSL (Property Specification Language) are the results
-    from different efforts that started with the standardisation of
+    of different efforts that started with the standardisation of
     temporal logic for use in the hardware design and verification
     usage that *Accelera Formal Verification Technical Committee*
     started around 1998.
@@ -79,7 +79,7 @@ widely adopted, so the term assertion is used in a more "traditionalist" way.
 
 Another way to define an assertion is as an unambiguous design behavior
 expressed as a Boolean function or temporal expressions, that the design
-must fulfill. Such property is usually described using a language that
+must fulfill. Such property are usually described using a language that
 can express behaviors of the design over time.
 
 *Then, what is SVA?* - SVA is part of the P1800 and standardizes
