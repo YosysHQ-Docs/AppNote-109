@@ -567,7 +567,7 @@ such as:
    * Within.
    * Etc.
 
-   These operators increases the complexity of the model and may cause that some
+   These operators increases the complexity of the model and may cause some
    assertions not converge.
 
 
@@ -576,7 +576,7 @@ Property Layer
 The property layer is where all the expressiveness of SVA starts to take shape. In
 this layer, Boolean constructs, sequences and property operators are used to
 encapsulate the behavior of the design within `property ... endproperty` blocks
-that will be further utilised by the *verification layer* to perform certain task.
+that will be further utilised by the *verification layer* to perform a certain task.
 
 A property construct can have formal arguments as shown in Figure 1.8 and Figure 1.9,
 that are expanded when the property is instantiated with the proper arguments. Properties
@@ -700,10 +700,10 @@ is shown below:
 
 Liveness Properties
 -------------------
-A liveness property checks that something good eventually happens. This
-kind of properties are more complex to check in FPV because, in contrast
-with safety properties where CEX can be found in a single state,
-for liveness properties this is not the case, since to find a CEX,
+A liveness property checks that something good eventually happens. These
+kinds of properties are more complex to check in FPV because in contrast
+to safety properties a CEX cannot be found in a single state.
+To find a CEX,
 sufficient evidence is needed that the "good thing" could be postponed forever,
 and sometimes an auxiliary property is needed to help the solver understand that
 there is some progress ongoing (fairness assumption).
@@ -738,7 +738,7 @@ and AXI protocol spec, is shown below.
 
 A deep explanation of how a solver of a FPV tool finds a liveness CEX is
 outside of the scope of this application note, but for the sake of clarity,
-consider the Figure 1.13 that explains in broad terms the rationale behind
+consider Figure 1.13 that explains in broad terms the rationale behind
 liveness property analysis.
 
 +-------------------------------------------------------------------------+
@@ -776,9 +776,9 @@ when the property is used with the verification directives listed below:
   a property must be true for all legal values applied at design inputs.
 - **assume:** The property models how inputs of the design are driven
   in an unexamined way, that is, as a fact that the solver does not check
-  but uses to *constraint* the valid values that will be used in the
-  *primary inputs*. An assertion with related *input assumptions* when is
-  proven, it is said that holds *assuming* that only the values constrained at
+  but uses to *constrain* the valid values that will be used in the
+  *primary inputs*. when an assertion with related *input assumptions* is
+  proven, it is said that it holds *assuming* only the values constrained at
   the input are driven in the block under test. Modeling *assumptions* is one
   of the most error-prone tasks in formal verification that can cause some problems
   such as *vacuity* as described in *YosysHQ AppNote 120 -- Weak precondition
@@ -816,8 +816,8 @@ can create powerful SVA checks for simple and complex designs.
 .. note::
    The action block (or the `else $error [...]) is not synthesizable, therefore
    an FPV tool will not execute that part of the assertion. This helps to debug
-   in case any property is failing, the FPV user can see the source code and get
-   an idea why this property is possibly failing and where to check more information.
+   the case where a property is failing as the FPV user can see the source code and get
+   an idea of where to check for more information.
    It is also important to give a meaningful name to all the properties/assertions,
    so debugging and readability are improved. If no name is given to a property,
    the FPV tool will assign a name to it.
