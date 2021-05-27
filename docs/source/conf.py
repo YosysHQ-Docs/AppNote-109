@@ -1,4 +1,4 @@
-project = "YosysHQ-AppNote-120"
+project = "YosysHQ-AppNote-109"
 author = "YosysHQ Gmbh"
 copyright ="2021 YosysHQ Gmbh"
 
