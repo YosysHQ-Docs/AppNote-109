@@ -64,7 +64,7 @@ specified by the Assertions Committee (SV-AC).
 .. note::
     The SVA and PSL (Property Specification Language) are the results
     from different efforts that started with the standardisation of
-    temporal logics for use in the hardware design and verification
+    temporal logic for use in the hardware design and verification
     usage that *Accelera Formal Verification Technical Committee*
     started around 1998.
 
@@ -74,7 +74,7 @@ Introduction to SVA
 *specifies a behavior of the system*. This term is confusing because is
 similar to the definition of *property*. In fact, both *assert* and
 *property* refer to the same thing. The inconsistency is mainly because
-the term *assertion* is adopted in ABV, and *property* in FPV. BV is more
+the term *assertion* is adopted in ABV, and *property* in FPV. ABV is more
 widely adopted, so the term assertion is used in a more "traditionalist" way.
 
 Another way to define an assertion is as an unambiguous design behavior
@@ -241,7 +241,7 @@ of assertions can be defined in:
 * *Initial* or *always* blocks.
 * Inside a *module* or *checker* object.
 * In a SystemVerilog *interface*.
-* For simulation, in *progam* blocks.
+* For simulation, in *program* blocks.
 
 +----------------------------------------------------------------------+
 | .. image:: media/concurrent0.png                                     |
@@ -539,7 +539,7 @@ And if the tWR value is set as a parameter, then this can be further reduced to:
    cmd == WR && bank == nd_bank |-> ##1 notCMDPRE [*tWR];
 
 .. note::
-   The *nd_bank* expression is a non-deterministic value choosen by the
+   The *nd_bank* expression is a non-deterministic value chosen by the
    formal solver as a symbolic variable. A symbolic variable is a variable
    that takes any valid value in the initial state and then is kept stable.
    This variable is useful to track a single arbitrary instance of a design
@@ -738,7 +738,8 @@ and AXI protocol spec, is shown below.
 
 A deep explanation of how a solver of a FPV tool finds a liveness CEX is
 outside of the scope of this application note, but for the sake of clarity,
-consider the Figure 1.13.
+consider the Figure 1.13 that explains in broad terms the rationale behind
+liveness property analysis.
 
 +-------------------------------------------------------------------------+
 | .. image:: media/liveness.png                                           |
@@ -753,8 +754,16 @@ consider the Figure 1.13.
 Verification Layer
 ------------------
 A property by himself does not execute any check unless is instantiated with
-a verification statement. A property can be used with the following verification
-directives:
+a verification statement. In section *Property Layer* results of property
+evaluation are constantly mentioned. Those values and conditions applies
+when the property is used with the verification directives listed below:
+
+
+.. note::
+   For simulation, properties works as monitors that checks the traffic/behavior
+   of the test vectors applied to the design under test. For FPV, properties are
+   non-deterministic since all possible values are used to check a proof.
+
 
 - **assert:** Specifies *validity*, *correctness*, or a behavior that a
   system or design is obligated to implement. When using the *assert*
@@ -790,21 +799,65 @@ directives:
   Otherwise, if an assumption had been used, the simulator would have failed because
   it cannot be guaranteed that certain opcode is the only one applied to the design.
 
+For example, to assert the deadlock-free property shown in Figure 1.9, the
+following construct can now be defined using all the SVA layers:
+
++----------------------------------------------------------------------+
+| .. literalinclude:: ./child/deadlock.sv                              |
+|     :language: systemverilog                                         |
+|     :lines: 31-32                                                    |
++======================================================================+
+| Figure 1.14. Using the AXI deadlock property as an assertion.        |
++----------------------------------------------------------------------+
+
+In this way and using the other verification directives as well, FPV users
+can create powerful SVA checks for simple and complex designs.
+
+.. note::
+   The action block (or the `else $error [...]) is not synthesizable, therefore
+   an FPV tool will not execute that part of the assertion. This helps to debug
+   in case any property is failing, the FPV user can see the source code and get
+   an idea why this property is possibly failing and where to check more information.
+   It is also important to give a meaningful name to all the properties/assertions,
+   so debugging and readability are improved. If no name is given to a property,
+   the FPV tool will assign a name to it.
+
+
 ----------------------------
 More Advanced SVA Constructs
 ----------------------------
 
 Checkers
 --------
+Usually, properties are defined inside a module but this has been proven
+to be a problem in certain scenarios. For example, in a module, all port types
+must be explicitly defined but to reuse properties sometimes it is needed that
+the unit that encapsulates the SVA constructs can admit any type as input
+(to make it generic). Also, modules cannot accept sequences and/or properties
+as inputs and some other drawbacks that the construct `checker ... endchecker`
+solves.
 
-SVA IP
-------
+For example, a checker to create the deadlock-free checker for property
+shown in Figure 1.12 the following code can be used:
+
+.. code-block:: systemverilog
+
+   checker deadlock_axi(sequence handshake_start, property handshake_end);
+     default clocking fpv_clk @(posedge ACLK); endclocking
+     default disable iff(!ARESETn);
+
+     property handshake_max_wait(valid_seq, ready, timeout);
+      valid_seq |-> strong(##[1:$]) ready;
+     endproperty // handshake_max_wait
+
+     deadlock_free: assert property(handshake_max_wait(handshake_start, handshake_end));
+   endchecker
 
 
-.. note::
-   For simulation, properties works as monitors that checks the traffic/behavior
-   of the test vectors applied to the design under test. For FPV, properties are
-   non-deterministic since all possible values are used to check a proof.
+
+=====
+Notes
+=====
 
 
 .. [1]
@@ -812,7 +865,7 @@ SVA IP
    industry, and is often used interchangeably with the term “property”.
 
 .. [2]
-   SystemVerilog Assertions are temporal logics and model checking
+   SystemVerilog Assertions are temporal logic and model checking
    methods applied to real world hardware design and verification. In
    fact, most of the notations from the literature that describe these
    methods are employed to express the formal semantics of SVA in the
@@ -833,3 +886,11 @@ SVA IP
 
 .. [6]
    Sequential Extended Regular Expressions.
+
+==========
+References
+==========
+
+* An AMBA AXI4 Stream SVA Verification IP for FPV which was used to show
+  some of the properties described in this AppNote can be obtained in: 
+  https://github.com/dh73/A_Formal_Tale_Chapter_I_AMBA
