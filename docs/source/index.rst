@@ -14,7 +14,17 @@ course given by FPV specialists at YosysHQ.
 ------------
 Organisation
 ------------
-TBD
+
+* Section :ref:`Property Checking with SystemVerilog Assertions` contains
+  a brief introduction of SVA and the description of some elementary terms.
+
+* Section :ref:`Assertion Types` describes the different types of properties
+  defined in the P1800, immediate and concurrent. It also presents both clock
+  and disable conditions for concurrent assertions.
+
+* Section :ref:`Elements of SVA` describes each layer of SVA: Boolean, Temporal,
+  Property and Verification layers. This section also describes some sequence
+  property operators and property types.
 
 ------------
 Introduction
@@ -157,10 +167,10 @@ in detail in **Appnote 105 Formal Property Checking Basics**.
 |    :height: 3.18in                                                   |
 |    :align: center                                                    |
 +======================================================================+
-| Figure 1.1. A graphical description of the kinds of assertions.      |
+| Figure 3.1. A graphical description of the kinds of assertions.      |
 +----------------------------------------------------------------------+
 
-An example of a concurrent assertion is shown in *Figure 1.2*. This is
+An example of a concurrent assertion is shown in *Figure 3.2*. This is
 the kind of assertion commonly using in *Formal Property Verification
 (FPV)*.
 
@@ -170,12 +180,12 @@ the kind of assertion commonly using in *Formal Property Verification
 |    :height: 2.93in                                                   |
 |    :align: center                                                    |
 +======================================================================+
-| Figure 1.2. One possible definition of a concurrent SVA.             |
+| Figure 3.2. One possible definition of a concurrent SVA.             |
 +----------------------------------------------------------------------+
 
-As shown in Figure 1.2, the property has a verification layer with different
+As shown in Figure 3.2, the property has a verification layer with different
 functions namely *assert*, *assume*, *cover* and *restrict* that are described
-in `I want to do a link here, just writing a stub <tbd>` __.
+in :ref:`Verification Layer`.
 
 ===============
 Assertion Types
@@ -206,12 +216,12 @@ Immediate assertions are pure combinatorial elements that do not allow for tempo
 |    :height: 2.5in                                                    |
 |    :align: center                                                    |
 +======================================================================+
-| Figure 1.3. Immediate assertion example, with clocked and unclocked  |
+| Figure 4.1. Immediate assertion example, with clocked and unclocked  |
 | semantics.                                                           |
 +----------------------------------------------------------------------+
 
 Immediate assertions are better described in **Appnote 105 Formal Property
-Checking Basics**
+Checking Basics**.
 
 ---------------------
 Concurrent Assertions
@@ -235,7 +245,7 @@ be avoided using SVA.
    SV-AC semantics for elaboration. So all the SystemVerilog constructs are
    enabled for the designer/validation engineer to use.
 
-The Figure 1.4 shows an example of a concurrent assertion definition. This kind
+The Figure 4.2 shows an example of a concurrent assertion definition. This kind
 of assertions can be defined in:
 
 * *Initial* or *always* blocks.
@@ -249,7 +259,7 @@ of assertions can be defined in:
 |    :height: 2.2in                                                    |
 |    :align: center                                                    |
 +======================================================================+
-| Figure 1.4. Concurrent assertion example, defined in the procedural  |
+| Figure 4.2. Concurrent assertion example, defined in the procedural  |
 | code and as standalone.                                              |
 +----------------------------------------------------------------------+
 
@@ -261,7 +271,7 @@ construct helps to explicitly define the event for sampled valued
 functions as well, that will be discussed in next sections.
 The default clock event for a concurrent property can be defined using
 the keyword `default clocking` and serves as the leading clock for all
-the concurrent properties. The Figure 1.5 shows an example of default
+the concurrent properties. The Figure 4.3 shows an example of default
 clocking definition.
 
 Disable condition
@@ -270,14 +280,14 @@ Likewise, some properties may need to be disabled during some events,
 because their results are not valid anyway, for example, during the
 reset state. The **default disable iff (event)** keywords can be used
 to define when a concurrent assertion result is not intended to be
-checked. The Figure 1.5 shows an example of default reset definition.
+checked. The Figure 4.3 shows an example of default reset definition.
 
 +----------------------------------------------------------------------+
 | .. literalinclude:: ./child/pipe.sv                                  |
 |     :language: systemverilog                                         |
 |     :lines: 1-13                                                     |
 +======================================================================+
-| Figure 1.4. Usage of default clocking and default disable events used|
+| Figure 4.3. Usage of default clocking and default disable events used|
 | to state that all concurrent properties are checked each *posedge*   |
 | PCLK and disabled if the *PRSTn* reset is deasserted.                |
 +----------------------------------------------------------------------+
@@ -301,8 +311,8 @@ following sections.
 Boolean Layer
 -------------
 Concurrent properties can contain Boolean expressions that are composed of
-SystemVerilog constructs with some restrictions _[5]. These expressions are used
-to express conditions or behaviors of the design. Consider Figure 1.5 that
+SystemVerilog constructs with some restrictions [5]_. These expressions are used
+to express conditions or behaviors of the design. Consider Figure 5.1 that
 represents the Boolean layer of a concurrent property extracted from AXI4-Stream.
 
 +-------------------------------------------------------------------------+
@@ -310,24 +320,57 @@ represents the Boolean layer of a concurrent property extracted from AXI4-Stream
 |     :language: systemverilog                                            |
 |     :lines: 1-4                                                         |
 +=========================================================================+
-| Figure 1.5. The Boolean layer of the following property: "A combination |
+| Figure 5.1. The Boolean layer of the following property: "A combination |
 | of TKEEP LOW and TSTRB HIGH must not be used (2.4.3 TKEEP and TSTRB     |
 | combinations, p2-9, Table 2-2)." from AMBA IHI0051A.                    |
 +-------------------------------------------------------------------------+
 
-As can be seen, the evaluation of the Boolean expression shown in Figure 1.5
+As can be seen, the evaluation of the Boolean expression shown in Figure 5.1
 will be `logic one` when any combination of a TKEEP bit low and the same
 bit in TSTRB high, otherwise the result will be `logic zero`.
 
 Temporal or Sequence Layer
 --------------------------
 The temporal layer express behaviors that can span over time, usually
-expressed using SERE-regular _[6] expressions known as *sequences* that
+expressed using SERE-regular [6]_ expressions known as *sequences* that
 describes sequential behaviors that are employed to build properties.
 
 SVA provides a set of powerful temporal operators that can be used to
 describe complex behaviors or conditions in different points of time.
 
+Sequences can be promoted to sequential properties if they are used in a
+property context (in other words, when used in property blocks). Starting
+from SV09, *weak* and *strong* operators have been defined.
+*Strong* sequential properties hold if there is a non-empty match of the
+sequence (it must be witnessed), whereas a *weak* sequence holds if there
+is no finite prefix witnessing a no match (if the sequence never happens,
+the property holds).
+
+*Strong* sequential properties are identified by the prefix *s_* as
+in:
+
+* s_eventually.
+* s_until.
+* s_until_with.
+* s_always.
+
+Or enclosed within parenthesis followed by the keyword *strong* as in:
+* strong(s ##[1:$] n).
+
+The evaluation of sequential properties (if they are weak or strong) when the
+*weak* or *strong* operands are omitted depends on the verification directive
+where they are used:
+
+* **Weak** when the sequence is used in *assert* or *assume* directive.
+* **Strong** in all other cases.
+
+Some sequential property operators are discussed below.
+
+Basic Sequence Operators Introduction
+-------------------------------------
+
+Bounded Delay Operator
+----------------------
 Sequences can be more complex than just Boolean values. Basic sequences
 can contain single delays (for example `##1` that means one cycle delay) and
 bounded/unbounded range delays (the bounded sequence `##[1:10]` means one
@@ -345,7 +388,7 @@ in SVA as:
 
    foo ##[1:2] bar
 
-Is shown in Figure 1.6. As can be seen, there may be different match or tight
+Is shown in Figure 5.2. As can be seen, there may be different match or tight
 satisfaction points:
 
 * When *foo* is true at cycle t2 and bar at cycle t3.
@@ -362,44 +405,11 @@ one or two cycles.
 |    :height: 10.85cm                                                  |
 |    :align: center                                                    |
 +======================================================================+
-| Figure 1.6. Example of sequence `foo ##[1:2] bar`.                   |
+| Figure 5.2. Example of sequence `foo ##[1:2] bar`.                   |
 +----------------------------------------------------------------------+
 
-Sequences can be promoted to sequential properties if they are used in a
-property context (in other words, when used in property blocks). Starting
-from SV09, *weak* and *strong* operators have been defined.
-*Strong* sequential properties hold if there is a non-empty match of the
-sequence (it must be witnessed), whereas a *weak* sequence holds if there
-is no finite prefix witnessing a no match (if the sequence never happens,
-the property holds).
-
-*Strong* sequential properties are identified by the prefix *s_* as
-in:
-* s_eventually.
-* s_until.
-* s_until_with.
-* s_always.
-
-Or enclosed within parenthesis followed by the keyword *strong* as in:
-* strong(s ##[1:10] n).
-
-The evaluation of sequential properties (if they are weak or strong) when the
-*weak* or *strong* operands are omitted depends on the verification directive
-where they are used:
-
-* **Weak** when the sequence is used in *assert* or *assume* directive.
-* **Strong** in all other cases.
-
-Some sequential property operators are discussed below.
-
-Basic Sequence Operators Introduction
--------------------------------------
-
-Bounded Delay Operator
-----------------------
-
 The bounded operators `##m` and `##[m:n]` where *m* and *n* are non-negative integers,
-can be used to specify clock delays between two events. The Figure 1.6 is
+can be used to specify clock delays between two events. The Figure 5.2 is
 an example of usage of these operators. For the following sequence:
 
 .. code-block:: systemverilog
@@ -411,7 +421,7 @@ both *foo* and *bar* expressions. If *m == 0* both *foo* and *bar* overlaps,
 creating a *fusion* of both expressions. The sequence concatenation starts
 matching *bar* in the next clock cycle after *foo* matches. Whereas for
 sequence fusion, both *foo* and *bar* start matching at the same clock tick
-where *foo* matches. See Figure 1.7 for a better understanding.
+where *foo* matches. See Figure 5.3 for a better understanding.
 
 +-------------------------------------------------------------------------+
 | .. image:: media/concat_fusion.png                                      |
@@ -419,7 +429,7 @@ where *foo* matches. See Figure 1.7 for a better understanding.
 |    :height: 5.29cm                                                      |
 |    :align: center                                                       |
 +=========================================================================+
-| Figure 1.7. Illustration of sequence fusion and sequence concatenation. |
+| Figure 5.3. Illustration of sequence fusion and sequence concatenation. |
 +-------------------------------------------------------------------------+
 
 For a more concise example, consider the Figure 14-5 Combined Tx and Rx
@@ -469,7 +479,7 @@ are useful, for example, to check forward progress of safety
 properties that could be satisfied *by doing nothing*. What does this means?, consider
 the VALID/READY handshake defined in **ARM IHI 0022E Page A3-9** (better known as
 AXI-4 specification). A potential deadlock can happen when VALID signal is asserted
-but READY is never asserted. If the property shown in Figure 1.8 is part of a design
+but READY is never asserted. If the property shown in Figure 5.4 is part of a design
 where READY is deasserted forever after VALID has been asserted, the property will
 pass vacuously.
 
@@ -478,26 +488,26 @@ pass vacuously.
 |     :language: systemverilog                                         |
 |     :lines: 1-14                                                     |
 +======================================================================+
-| Figure 1.8. A property that monitors the EXOKAY response value when  |
+| Figure 5.4. A property that monitors the EXOKAY response value when  |
 | VALID and READY are asserted.                                        |
 +----------------------------------------------------------------------+
 
 To check that the system is actually making progress, the property using *one or
-more clock ticks* operator shown in Figure 1.9 can be used. If this property fails,
-then the FPV user can deduce that property of Figure 1.8 is not healthy.
+more clock ticks* operator shown in Figure 5.5 can be used. If this property fails,
+then the FPV user can deduce that property of Figure 5.4 is not healthy.
 
 +----------------------------------------------------------------------+
 | .. literalinclude:: ./child/deadlock.sv                              |
 |     :language: systemverilog                                         |
 |     :lines: 1-14                                                     |
 +======================================================================+
-| Figure 1.9. A property that checks for a deadlock condition. If VALID|
+| Figure 5.5. A property that checks for a deadlock condition. If VALID|
 | is asserted and READY is not asserted in *timeout* non-negative      |
 | cycles, the property will be unsuccessful.                           |
 +----------------------------------------------------------------------+
 
 .. note::
-   The property of Figure 1.9 can still fail in certain scenarios. This is
+   The property of Figure 5.5 can still fail in certain scenarios. This is
    because the unbounded operator employed in the property definition has
    weak semantics. A better solution could be to make this property *strong*
    but this implies that this *safety* property will be converted into a *liveness*
@@ -518,6 +528,12 @@ then the property can be described as follows:
                                        ##1 notCMDPRE ##1 notCMDPRE ##1 notCMDPRE
                                        ... ##1 notCMDPRE ##1 notCMDPRE;
     endproperty
+
+.. note::
+   The *let* declaration serves as customization and can be used as a replacement
+   for text macros, but with a local scope. Also, unlike the compiler directives
+   `ifdef,` ifndef, etc, the *let* construct is part of the SystemVerilog language,
+   so it is safer to use than macros.
 
 This is too verbose and not an elegant solution. SVA has a construct to define that
 an expression must hold for *m* consecutive cycles: the consecutive repetition
@@ -578,7 +594,7 @@ this layer, Boolean constructs, sequences and property operators are used to
 encapsulate the behavior of the design within `property ... endproperty` blocks
 that will be further utilised by the *verification layer* to perform a certain task.
 
-A property construct can have formal arguments as shown in Figure 1.8 and Figure 1.9,
+A property construct can have formal arguments as shown in Figure 5.4 and Figure 5.5,
 that are expanded when the property is instantiated with the proper arguments. Properties
 can also have no arguments.
 
@@ -593,7 +609,7 @@ The P1800 defines several kinds of properties of which some are shown below:
 * **Disjunction**: A property of the form *property_expression1* **or**
   *property_expression2* evaluates to true if at least one of the property expressions
   evaluates to true.
-* **Conjunction:**: A property of the form *property_expression1* **and**
+* **Conjunction**: A property of the form *property_expression1* **and**
   *property_expression2* evaluates to true if the two property expressions
   evaluates to true.
 * **If-else**: This property has the form **if (condition)** *property_expression1* **else**
@@ -622,7 +638,7 @@ in the next clock cycle.
 |    :height: 6.46cm                                                      |
 |    :align: center                                                       |
 +=========================================================================+
-| Figure 1.10. The property *nexttime p*  holds if *p* is true in the next|
+| Figure 5.6. The property *nexttime p*  holds if *p* is true in the next |
 | clock cycle.                                                            |
 +-------------------------------------------------------------------------+
 
@@ -636,7 +652,7 @@ This property evaluates to true if the expression *p* holds at all states.
 |    :height: 6.46cm                                                      |
 |    :align: center                                                       |
 +=========================================================================+
-| Figure 1.10. The property *always p*  is also known as *invariance      |
+| Figure 5.7. The property *always p*  is also known as *invariance       |
 | property* or simply *invariant*.                                        |
 +-------------------------------------------------------------------------+
 
@@ -650,7 +666,7 @@ in the future.
 |    :height: 6.46cm                                                      |
 |    :align: center                                                       |
 +=========================================================================+
-| Figure 1.10. The property *eventually p* can be used to check for       |
+| Figure 5.8. The property *eventually p* can be used to check for        |
 | progress during proof evaluation.                                       |
 +-------------------------------------------------------------------------+
 
@@ -665,7 +681,7 @@ in all states until *q* is asserted.
 |    :height: 6.46cm                                                      |
 |    :align: center                                                       |
 +=========================================================================+
-| Figure 1.10. The property *eventually p* can be used to check for       |
+| Figure 5.9. The property *eventually p* can be used to check for        |
 | progress during proof evaluation.                                       |
 +-------------------------------------------------------------------------+
 
@@ -694,7 +710,7 @@ is shown below:
 |     :language: systemverilog                                         |
 |     :lines: 1-14                                                     |
 +======================================================================+
-| Figure 1.11. A safety property to state that a packet should not be  |
+| Figure 5.10. A safety property to state that a packet should not be  |
 | dropped if the receiver cannot process it.                           |
 +----------------------------------------------------------------------+
 
@@ -709,9 +725,10 @@ and sometimes an auxiliary property is needed to help the solver understand that
 there is some progress ongoing (fairness assumption).
 
 A safety property can be trivially proven by doing nothing, because this
-will never lead to a scenario where a "bad thing" occurs. A liveness property
-can point out that a system is not making any progress w.r.t the functionality
-and time-lapse of the data that the design is supposed to provide.
+will never lead to a scenario where a "bad thing" occurs. A liveness
+property complements safety properties, but they are more difficult to prove
+because the solver needs to guarantee that something will happen infinitely
+many times.
 
 An example of a liveness property is from the classic arbiter problem that
 states that *every request must be eventually granted*, that can be described
@@ -732,13 +749,13 @@ and AXI protocol spec, is shown below.
 |     :language: systemverilog                                         |
 |     :lines: 16-29                                                    |
 +======================================================================+
-| Figure 1.12. Using a liveness property to check for deadlock         |
+| Figure 5.11. Using a liveness property to check for deadlock         |
 | conditions. This is a very common practice.                          |
 +----------------------------------------------------------------------+
 
 A deep explanation of how a solver of a FPV tool finds a liveness CEX is
 outside of the scope of this application note, but for the sake of clarity,
-consider Figure 1.13 that explains in broad terms the rationale behind
+consider Figure 5.12 that explains in broad terms the rationale behind
 liveness property analysis.
 
 +-------------------------------------------------------------------------+
@@ -747,14 +764,14 @@ liveness property analysis.
 |    :height: 4.2cm                                                       |
 |    :align: center                                                       |
 +=========================================================================+
-| Figure 1.13. A very simplistic example of liveness resolution.          |
+| Figure 5.12. A very simplistic example of liveness resolution.          |
 +-------------------------------------------------------------------------+
 
 
 Verification Layer
 ------------------
 A property by himself does not execute any check unless is instantiated with
-a verification statement. In section *Property Layer* results of property
+a verification statement. In section :ref:`Property Layer` results of property
 evaluation are constantly mentioned. Those values and conditions applies
 when the property is used with the verification directives listed below:
 
@@ -799,15 +816,15 @@ when the property is used with the verification directives listed below:
   Otherwise, if an assumption had been used, the simulator would have failed because
   it cannot be guaranteed that certain opcode is the only one applied to the design.
 
-For example, to assert the deadlock-free property shown in Figure 1.9, the
+For example, to assert the deadlock-free property shown in Figure 5.5, the
 following construct can now be defined using all the SVA layers:
 
 +----------------------------------------------------------------------+
 | .. literalinclude:: ./child/deadlock.sv                              |
 |     :language: systemverilog                                         |
-|     :lines: 31-32                                                    |
+|     :lines: 31-34                                                    |
 +======================================================================+
-| Figure 1.14. Using the AXI deadlock property as an assertion.        |
+| Figure 5.13. Using the AXI deadlock property as an assertion.        |
 +----------------------------------------------------------------------+
 
 In this way and using the other verification directives as well, FPV users
@@ -838,7 +855,7 @@ as inputs and some other drawbacks that the construct `checker ... endchecker`
 solves.
 
 For example, a checker to create the deadlock-free checker for property
-shown in Figure 1.12 the following code can be used:
+shown in Figure 5.11 the following code can be used:
 
 .. code-block:: systemverilog
 
@@ -846,18 +863,13 @@ shown in Figure 1.12 the following code can be used:
      default clocking fpv_clk @(posedge ACLK); endclocking
      default disable iff(!ARESETn);
 
-     property handshake_max_wait(valid_seq, ready, timeout);
-      valid_seq |-> strong(##[1:$]) ready;
+     property handshake_max_wait(valid_seq, ready);
+      valid_seq |=> s_eventually ready;
      endproperty // handshake_max_wait
 
      deadlock_free: assert property(handshake_max_wait(handshake_start, handshake_end));
    endchecker
 
-
-
-=====
-Notes
-=====
 
 
 .. [1]
@@ -891,6 +903,11 @@ Notes
 References
 ==========
 
-* An AMBA AXI4 Stream SVA Verification IP for FPV which was used to show
-  some of the properties described in this AppNote can be obtained in: 
+* 1800-2017 - IEEE Standard for SystemVerilog Unified Hardware Design, Specification, and
+  Verification Language.
+* Bustan, D., Korchemny, D., Seligman, E., & Yang, J. (2012). SystemVerilog Assertions:
+  Past, present, and future SVA standardization experience. IEEE Design & Test of 
+  Computers, 29(2), 23-31.
+* The AMBA AXI4 Stream SVA Verification IP for FPV which was used to show
+  some of the properties described in this AppNote can be obtained in:
   https://github.com/dh73/A_Formal_Tale_Chapter_I_AMBA
