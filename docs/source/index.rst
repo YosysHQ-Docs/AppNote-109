@@ -14,7 +14,17 @@ course given by FPV specialists at YosysHQ.
 ------------
 Organisation
 ------------
-TBD
+
+* Section :ref:`Property Checking with SystemVerilog Assertions` contains
+  a brief introduction of SVA and the description of some elementary terms.
+
+* Section :ref:`Assertion Types` describes the different types of properties
+  defined in the P1800, immediate and concurrent. It also presents both clock
+  and disable conditions for concurrent assertions.
+
+* Section :ref:`Elements of SVA` describes each layer of SVA: Boolean, Temporal,
+  Property and Verification layers. This section also describes some sequence
+  property operators and property types.
 
 ------------
 Introduction
@@ -893,6 +903,11 @@ shown in Figure 5.11 the following code can be used:
 References
 ==========
 
-* An AMBA AXI4 Stream SVA Verification IP for FPV which was used to show
-  some of the properties described in this AppNote can be obtained in: 
+* 1800-2017 - IEEE Standard for SystemVerilog Unified Hardware Design, Specification, and
+  Verification Language.
+* Bustan, D., Korchemny, D., Seligman, E., & Yang, J. (2012). SystemVerilog Assertions:
+  Past, present, and future SVA standardization experience. IEEE Design & Test of 
+  Computers, 29(2), 23-31.
+* The AMBA AXI4 Stream SVA Verification IP for FPV which was used to show
+  some of the properties described in this AppNote can be obtained in:
   https://github.com/dh73/A_Formal_Tale_Chapter_I_AMBA
