@@ -2,7 +2,7 @@ project = "YosysHQ-AppNote-109"
 author = "YosysHQ Gmbh"
 copyright ="2021 YosysHQ Gmbh"
 
-html_theme = 'press'
+#html_theme = 'press'
 
 # https://stackoverflow.com/questions/40641252/how-can-i-avoid-the-horizontal-scrollbar-in-a-rest-table
 def setup(app):
