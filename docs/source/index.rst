@@ -240,10 +240,11 @@ not suggested as it could add an extra verification task to the design that can
 be avoided using SVA.
 
 .. note::
-   This is one of the advantages of the *Tabby CAD Suite* over the Open Source
-   Version: A leading-industry parser provides P1800 standard-compliant SV and
-   SV-AC semantics for elaboration. So all the SystemVerilog constructs are
-   enabled for the designer/validation engineer to use.
+   One of the advantages of the *Tabby CAD Suite* over the Open Source
+   Version of SymbiYosys is that a leading-industry parser provides P1800
+   standard-compliant SV and SV-AC semantics for elaboration. So all the
+   SystemVerilog constructs are enabled for the designer/validation
+   engineers to use either for Formal Property Verification and/or FPGA synthesis.
 
 The Figure 4.2 shows an example of a concurrent assertion definition. This kind
 of assertions can be defined in:
@@ -330,6 +331,30 @@ when any combination of a TKEEP bit low and the same bit in TSTRB high,
 otherwise the result will be `logic zero`. The SystemVerilog Boolean operators
 are used in the SVA Boolean layer to represent true/false conditions.
 
+Another type of constructs that can be expressed in the Boolean layer are the
+Boolean invariance properties. A Boolean invariance (or invariant) property
+evaluates to *true* on any state, in other words, a property that always holds. For
+example, consider the following sentence: "The *packet_error* port  must be never
+asserted" that can be expressed as *an assertion* in the following way:
+
+.. code-block:: systemverilog
+
+   ap_never: assert property (@(posedge clk) disable iff(!rstn)
+                              !packet_error);
+
+The unary logical negation operator is used to express that *packet_error* should
+not evaluate to logic one or the assertion will fail. The `@(posedge clk)` implies
+implicitly that this Boolean condition is `always` evaluated, therefore this assertion
+is an *invariant* because it should always hold.
+
+.. note::
+   When FPV proves that an assertion holds in the design, is because the solver guarantees
+   that the property is true in any reachable state from certain initial state. This is
+   the definition of an *invariance property*, and in fact, is how the solver decides to finish
+   the proof if he has found that the property is an invariant.
+   This is specially helpful in certain FPV techniques to cope with complexity, such as
+   assume-guarantee technique. Future application notes will delve into these topics.
+
 
 Temporal or Sequence Layer
 --------------------------
@@ -358,14 +383,18 @@ in:
 * s_always.
 
 Or enclosed within parenthesis followed by the keyword *strong* as in:
-* strong(s ##[1:$] n).
 
-The evaluation of sequential properties (if they are weak or strong) when the
-*weak* or *strong* operands are omitted depends on the verification directive
-where they are used:
+.. code-block:: systemverilog
 
-* **Weak** when the sequence is used in *assert* or *assume* directive.
-* **Strong** in all other cases.
+   strong(s ##[1:$] n);
+
+.. note::
+   The **default evaluation** of sequential properties (if they are weak or strong) when the
+   *weak* or *strong* operands are omitted depends on the verification directive
+   where they are used:
+
+   * **Weak** when the sequence is used in *assert* or *assume* directive.
+   * **Strong** in all other cases.
 
 Some sequential property operators are discussed below.
 
@@ -439,6 +468,15 @@ For a more concise example, consider the Figure 14-5 Combined Tx and Rx
 state machines from ARM IHI 0050E. To describe the transitions of the Tx Link
 FSM the following sequence can be defined:
 
++-------------------------------------------------------------------------+
+| .. image:: media/arm_tx_Seq.png                                         |
+|    :width: 15.92cm                                                      |
+|    :height: 4.69cm                                                      |
+|    :align: center                                                       |
++=========================================================================+
+| Example of the sequence *tx_link_full* that happens in 5 clock cycles.  |
++-------------------------------------------------------------------------+
+
 .. code-block:: systemverilog
 
    /* TX FSM should transition from TxStop
@@ -453,6 +491,12 @@ FSM the following sequence can be defined:
      fsm_lnk_ns.chi_tx_t == TxDeact ##[1:4]
      fsm_lnk_ns.chi_tx_t == TxStop  ##[1:4]
    endsequence
+
+.. note::
+   The *tx_link_full* is a relaxed sequence because it allows the check of
+   the transitions to happen in a small time window and not in a fixed amount
+   of cycles. This usually helps in property convergence of complex sequences or
+   architecture exploration for RTL development.
 
 This sequence *tx_link_full* describes the transition of the Tx Link FSM from TxStop
 up to TxStop that precedes TxDeact. This sequence can be used in a cover or assert
