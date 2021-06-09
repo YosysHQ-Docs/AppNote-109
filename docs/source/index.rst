@@ -325,15 +325,18 @@ represents the Boolean layer of a concurrent property extracted from AXI4-Stream
 | combinations, p2-9, Table 2-2)." from AMBA IHI0051A.                    |
 +-------------------------------------------------------------------------+
 
-As can be seen, the evaluation of the Boolean expression shown in Figure 5.1
-will be `logic one` when any combination of a TKEEP bit low and the same
-bit in TSTRB high, otherwise the result will be `logic zero`.
+The evaluation of the Boolean expression shown in Figure 5.1 will be `logic one`
+when any combination of a TKEEP bit low and the same bit in TSTRB high,
+otherwise the result will be `logic zero`. The SystemVerilog Boolean operators
+are used in the SVA Boolean layer to represent true/false conditions.
+
 
 Temporal or Sequence Layer
 --------------------------
 The temporal layer express behaviors that can span over time, usually
 expressed using SERE-regular [6]_ expressions known as *sequences* that
-describes sequential behaviors that are employed to build properties.
+describes sequential behaviors composed of Boolean conditions that are
+employed to build properties.
 
 SVA provides a set of powerful temporal operators that can be used to
 describe complex behaviors or conditions in different points of time.
