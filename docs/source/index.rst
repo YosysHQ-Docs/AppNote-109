@@ -342,29 +342,31 @@ asserted" that can be expressed as *an assertion* in the following way:
    ap_never: assert property (@(posedge clk) disable iff(!rstn)
                               !packet_error);
 
-**Example**:
-The file *invariant.sv* applies defines the following sequence for the property *ap_never*:
+.. topic:: Invariant Example
 
-.. image:: media/invariant.png
-   :width: 15.92cm
-   :height: 4.44cm
-   :align: center
+   The file *../src/invariant/invariant.sv* applies defines the following sequence for the
+   property *ap_never*:
 
-In the following way:
+   .. image:: media/invariant.png
+      :width: 15.92cm
+      :height: 4.44cm
+      :align: center
 
-.. literalinclude:: ../../src/invariant/invariant.sv
-   :language: systemverilog
-   :lines: 5-7, 8
+   In the following way:
 
-By running the command **sby -f invariant.sby err** it can be seen that *packet_error*
-is set as *1* at step *6* causing a failure of the property. To fix this, the sequence
-*pkt_err* must be always low:
+   .. literalinclude:: ../../src/invariant/invariant.sv
+      :language: systemverilog
+      :lines: 5-7, 8
 
-.. literalinclude:: ../../src/invariant/invariant.sv
-   :language: systemverilog
-   :lines: 11
+   By running the command **sby -f ../src/invariant/invariant.sby err** it can be seen that
+   *packet_error* is set as *1* at step *6* causing a failure of the property. To fix this,
+   the sequence *pkt_err* must be always low:
 
-By running *sby -f invariant.sby pass* the error will go away.
+   .. literalinclude:: ../../src/invariant/invariant.sv
+      :language: systemverilog
+      :lines: 11
+
+   Running *sby -f ../src/invariant/invariant.sby pass* will make the error will go away.
 
 
 The unary logical negation operator is used to express that *packet_error* should
