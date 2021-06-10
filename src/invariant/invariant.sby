@@ -1,0 +1,19 @@
+[tasks]
+err
+pass
+
+[options	]
+mode prove
+
+[engines]
+smtbmc boolector
+
+[script]
+read -sv seq.sv
+err: read -define _ERROR_; read -sv invariant.sv
+pass: read -sv invariant.sv
+prep -top invariant
+
+[files]
+invariant.sv
+ ../seq.sv

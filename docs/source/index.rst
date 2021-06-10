@@ -342,6 +342,31 @@ asserted" that can be expressed as *an assertion* in the following way:
    ap_never: assert property (@(posedge clk) disable iff(!rstn)
                               !packet_error);
 
+**Example**:
+The file *invariant.sv* applies defines the following sequence for the property *ap_never*:
+
+.. image:: media/invariant.png
+   :width: 15.92cm
+   :height: 4.44cm
+   :align: center
+
+In the following way:
+
+.. literalinclude:: ../../src/invariant/invariant.sv
+   :language: systemverilog
+   :lines: 5-7, 8
+
+By running the command **sby -f invariant.sby err** it can be seen that *packet_error*
+is set as *1* at step *6* causing a failure of the property. To fix this, the sequence
+*pkt_err* must be always low:
+
+.. literalinclude:: ../../src/invariant/invariant.sv
+   :language: systemverilog
+   :lines: 11
+
+By running *sby -f invariant.sby pass* the error will go away.
+
+
 The unary logical negation operator is used to express that *packet_error* should
 not evaluate to logic one or the assertion will fail. The `@(posedge clk)` implies
 implicitly that this Boolean condition is `always` evaluated, therefore this assertion
@@ -512,7 +537,6 @@ transitions are fulfilled, a cover construct such as the one shown below can be 
 .. note::
    For FPV, it is always recommended to keep the cycle window small as possible
    since this impacts the performance of the proof.
-
 
 Unbounded Delay Operator
 ------------------------
