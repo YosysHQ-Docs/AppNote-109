@@ -2,8 +2,8 @@
 err
 pass
 
-[options	]
-mode prove
+[options]
+mode bmc
 
 [engines]
 smtbmc boolector

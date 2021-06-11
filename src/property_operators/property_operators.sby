@@ -1,0 +1,19 @@
+[tasks]
+err
+pass
+
+[options]
+mode bmc
+
+[engines]
+smtbmc boolector
+
+[script]
+read -sv seq.sv
+err: read -define _ERROR_; read -sv property_operators.sv
+pass: read -sv property_operators.sv
+prep -top property_operators
+
+[files]
+property_operators.sv
+ ../seq.sv

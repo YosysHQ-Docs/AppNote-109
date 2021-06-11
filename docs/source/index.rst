@@ -183,8 +183,12 @@ the kind of assertion commonly using in *Formal Property Verification
 | Figure 3.2. One possible definition of a concurrent SVA.             |
 +----------------------------------------------------------------------+
 
+.. role:: systemverilog(code)
+   :language: systemverilog
+
 As shown in Figure 3.2, the property has a verification layer with different
-functions namely *assert*, *assume*, *cover* and *restrict* that are described
+functions namely :systemverilog:`assert`, :systemverilog:`assume`,
+:systemverilog:`cover` and :systemverilog:`restrict` that are described
 in :ref:`Verification Layer`.
 
 ===============
@@ -249,10 +253,10 @@ be avoided using SVA.
 The Figure 4.2 shows an example of a concurrent assertion definition. This kind
 of assertions can be defined in:
 
-* *Initial* or *always* blocks.
-* Inside a *module* or *checker* object.
-* In a SystemVerilog *interface*.
-* For simulation, in *program* blocks.
+* :systemverilog:`initial` or :systemverilog:`always` blocks.
+* Inside a systemverilog:`module` or systemverilog:`checker` object.
+* In a SystemVerilog :systemverilog:`interface`.
+* For simulation, in :systemverilog:`program` blocks.
 
 +----------------------------------------------------------------------+
 | .. image:: media/concurrent0.png                                     |
@@ -279,14 +283,14 @@ Disable condition
 -----------------
 Likewise, some properties may need to be disabled during some events,
 because their results are not valid anyway, for example, during the
-reset state. The **default disable iff (event)** keywords can be used
+reset state. The :systemverilog:`default disable iff (event)` keywords can be used
 to define when a concurrent assertion result is not intended to be
 checked. The Figure 4.3 shows an example of default reset definition.
 
 +----------------------------------------------------------------------+
 | .. literalinclude:: ./child/pipe.sv                                  |
-|     :language: systemverilog                                         |
-|     :lines: 1-13                                                     |
+|    :language: systemverilog                                          |
+|    :lines: 1-13                                                      |
 +======================================================================+
 | Figure 4.3. Usage of default clocking and default disable events used|
 | to state that all concurrent properties are checked each *posedge*   |
@@ -318,8 +322,8 @@ represents the Boolean layer of a concurrent property extracted from AXI4-Stream
 
 +-------------------------------------------------------------------------+
 | .. literalinclude:: ./child/0-keep_strb_rsvd.sv                         |
-|     :language: systemverilog                                            |
-|     :lines: 1-4                                                         |
+|    :language: systemverilog                                             |
+|    :lines: 1-4                                                          |
 +=========================================================================+
 | Figure 5.1. The Boolean layer of the following property: "A combination |
 | of TKEEP LOW and TSTRB HIGH must not be used (2.4.3 TKEEP and TSTRB     |
@@ -370,8 +374,8 @@ asserted" that can be expressed as *an assertion* in the following way:
 
 
 The unary logical negation operator is used to express that *packet_error* should
-not evaluate to logic one or the assertion will fail. The `@(posedge clk)` implies
-implicitly that this Boolean condition is `always` evaluated, therefore this assertion
+not evaluate to logic one or the assertion will fail. The :systemverilog:`@(posedge clk)`
+implicitly implies that this Boolean condition is `always` evaluated, therefore this assertion
 is an *invariant* because it should always hold.
 
 .. note::
@@ -404,10 +408,10 @@ the property holds).
 *Strong* sequential properties are identified by the prefix *s_* as
 in:
 
-* s_eventually.
-* s_until.
-* s_until_with.
-* s_always.
+* :systemverilog:`s_eventually`.
+* :systemverilog:`s_until`.
+* :systemverilog:`s_until_with`.
+* :systemverilog:`s_nexttime`.
 
 Or enclosed within parenthesis followed by the keyword *strong* as in:
 
@@ -431,10 +435,10 @@ Basic Sequence Operators Introduction
 Bounded Delay Operator
 ----------------------
 Sequences can be more complex than just Boolean values. Basic sequences
-can contain single delays (for example `##1` that means one cycle delay) and
-bounded/unbounded range delays (the bounded sequence `##[1:10]` means one
-to ten cycles later, the unbounded sequence `##[+]` means one or more
-cycles later). Sequences can be enclosed within `sequence … endsequence`
+can contain single delays (for example :systemverilog:`##1` that means one cycle delay) and
+bounded/unbounded range delays (the bounded sequence :systemverilog:`##[1:10]` means one
+to ten cycles later, the unbounded sequence :systemverilog:`##[+]` means one or more
+cycles later). Sequences can be enclosed within :systemverilog:`sequence … endsequence`
 SVA constructs, or described directly in a property block.
 
 A sequence can be seen as a description that defines values over time,
@@ -473,21 +477,32 @@ one or two cycles.
    modification of the property used to describe that image, to exemplify the bounded delay
    operator in an assertion.
 
+   .. image:: media/relaxed_delay.png
+      :width: 15.92cm
+      :height: 4.59cm
+      :align: center
+
+   In the waveform, the match of the sequences are shown in cycles 3, 7, 10 and 11,
+   and no match in any of 18 or 19 when *bar* is expected to be asserted. The property
+   does not specify expected behavior in the cycles 11 to 16, so any value that *foo*
+   has in these cycles does not affect the property validity.
+
    The sequence is described in `relaxed_delay` as follows:
 
    .. literalinclude:: ../../src/relaxed_delay/relaxed_delay.sv
       :language: systemverilog
-      :lines: 6-8, 10-11
+      :lines: 8, 10-11
 
-  And the assertion where this sequence is used:
+   And the assertion where this sequence is used:
 
-  .. literalinclude:: ../../src/relaxed_delay/relaxed_delay.sv
-     :language: systemverilog
-     :lines: 16
+   .. literalinclude:: ../../src/relaxed_delay/relaxed_delay.sv
+      :language: systemverilog
+      :lines: 16-16
 
    By running **sby -f src/relaxed_delay/relaxed_delay.sby err** an error is shown
    pointing that the last *foo* is not followed by *bar* in the defined time window,
-   as described in Figure 5.1 wave name *No match* (shown at smt_step 16 in GTKWave).
+   as described in Figure 5.1 wave name *No match* (also shown at smt_step 16 in
+   GTKWave).
 
    To fix this, the last *foo* must be followed again by *bar* in one to two cycles,
    so the sequence needs to be changed:
@@ -496,8 +511,7 @@ one or two cycles.
       :language: systemverilog
       :lines: 13-14
 
-The bounded operators `##m` and `##[m:n]` where *m* and *n* are non-negative integers,
-can be used to specify clock delays between two events. The Figure 5.2 is
+The bounded operators :systemverilog:`##m` and :systemverilog:`##[m:n]` where *m* and *n* are non-negative integers, can be used to specify clock delays between two events. The Figure 5.2 is
 an example of usage of these operators. For the following sequence:
 
 .. code-block:: systemverilog
@@ -565,7 +579,7 @@ transitions are fulfilled, a cover construct such as the one shown below can be 
     wp_full_tx: cover property (@(posedge ACLK) disable iff (!ARESETn) tx_link_full);
 
 
-.. note::
+.. warning::
    For FPV, it is always recommended to keep the cycle window small as possible
    since this impacts the performance of the proof.
 
@@ -573,8 +587,8 @@ Unbounded Delay Operator
 ------------------------
 There are two operators for relaxed delay requirements:
 
-* Zero or more clock ticks: `##[0:$]` (or the shorcut `##[*]`).
-* One or more clock ticks: `##[1:$]` (or the shorcut `##[+]`).
+* Zero or more clock ticks: :systemverilog:`##[0:$]` (or the shorcut :systemverilog:`##[*]`).
+* One or more clock ticks: :systemverilog:`##[1:$]` (or the shorcut :systemverilog:`##[+]`).
 
 The formal semantics are the same as in the bounded delay operator. These operators
 are useful, for example, to check forward progress of safety
@@ -587,8 +601,8 @@ pass vacuously.
 
 +----------------------------------------------------------------------+
 | .. literalinclude:: ./child/rdwr_response_exokay.sv                  |
-|     :language: systemverilog                                         |
-|     :lines: 1-14                                                     |
+|    :language: systemverilog                                          |
+|    :lines: 1-14                                                      |
 +======================================================================+
 | Figure 5.4. A property that monitors the EXOKAY response value when  |
 | VALID and READY are asserted.                                        |
@@ -600,8 +614,8 @@ then the FPV user can deduce that property of Figure 5.4 is not healthy.
 
 +----------------------------------------------------------------------+
 | .. literalinclude:: ./child/deadlock.sv                              |
-|     :language: systemverilog                                         |
-|     :lines: 1-14                                                     |
+|    :language: systemverilog                                          |
+|    :lines: 1-14                                                      |
 +======================================================================+
 | Figure 5.5. A property that checks for a deadlock condition. If VALID|
 | is asserted and READY is not asserted in *timeout* non-negative      |
@@ -623,12 +637,13 @@ then the property can be described as follows:
 
 .. code-block:: systemverilog
 
-    let notCMDPRE = (!cmd == PRE) && bank == nd_bank;
+    let CMDWR = (cmd == WR && bank == nd_bank);
+    let notCMDPRE = !(cmd == PRE && bank == nd_bank);
     // notCMDPRE must hold 15 times after WR command is seen
     property cmdWR_to_cmdPRE;
-      cmd == WR && bank == nd_bank |-> ##1 notCMDPRE ##1 notCMDPRE ##1 notCMDPRE
-                                       ##1 notCMDPRE ##1 notCMDPRE ##1 notCMDPRE
-                                       ... ##1 notCMDPRE ##1 notCMDPRE;
+      CMDWR |-> ##1 notCMDPRE ##1 notCMDPRE ##1 notCMDPRE
+                ##1 notCMDPRE ##1 notCMDPRE ##1 notCMDPRE
+                ... ##1 notCMDPRE ##1 notCMDPRE;
     endproperty
 
 .. note::
@@ -639,43 +654,82 @@ then the property can be described as follows:
 
 This is too verbose and not an elegant solution. SVA has a construct to define that
 an expression must hold for *m* consecutive cycles: the consecutive repetition
-operator *[\*m]*. The same property can be described using the consecutive
-repetition operator as follows:
+operator :systemverilog:`[*m]`. The same property can be described using the consecutive
+repetition operator as follows [7]_:
 
 .. code-block:: systemverilog
 
-    let notCMDPRE = (!cmd == PRE) && bank == nd_bank;
+    let CMDWR = (cmd == WR && bank == nd_bank);
+    let notCMDPRE = !(cmd == PRE && bank == nd_bank);
     // notCMDPRE must hold 15 times after WR command is seen
     property cmdWR_to_cmdPRE;
-      cmd == WR && bank == nd_bank |-> ##1 notCMDPRE [*15];
+      CMDWR |-> ##1 notCMDPRE [*15];
     endproperty
 
 And if the tWR value is set as a parameter, then this can be further reduced to:
 
 .. code-block:: systemverilog
 
-   cmd == WR && bank == nd_bank |-> ##1 notCMDPRE [*tWR];
+   CMDWR |-> ##1 notCMDPRE [*tWR];
 
-.. note::
-   The *nd_bank* expression is a non-deterministic value chosen by the
-   formal solver as a symbolic variable. A symbolic variable is a variable
-   that takes any valid value in the initial state and then is kept stable.
-   This variable is useful to track a single arbitrary instance of a design
-   where properties are defined for multiple symmetric units.
+.. topic:: Consecutive Repetition
+
+   The file *src/consecutive_repetition/consecutive_repetition.sv* demonstrates
+   both the consecutive repetition operator in practice and the usage of non-deterministic
+   elements for exhaustive verification of structures such as the number of banks in an
+   SDRAM controller. First, the following waveform:
+
+   .. image:: media/consecutive_ndbank.png
+      :width: 15.92cm
+      :height: 7.62cm
+      :align: center
+
+   Represents a possible valid sequence of commands, encoded in the file
+   *consecutive_repetition.sv* as follows:
+
+   .. literalinclude:: ../../src/consecutive_repetition/consecutive_repetition.sv
+      :language: systemverilog
+      :lines: 15-15
+
+   It can be seen that, at clock cycle 14, the :systemverilog:`cmd == WR` but a
+   :systemverilog:`cmd == PRE` is seen at cycle 17 (3 cycles after a write) violating
+   the property, as shown in the waveform called *Fail*, this scenario can be seen by
+   executing *sby -f src/consecutive_repetition/consecutive_repetition.sby err*.
+
+   The problem can be solved, for example, by modifying the controller FSM re-schedule a
+   :systemverilog:`cmd == PRE` for a longer time if possible. In this case, by fixing the
+   sequence *seq_cmd* as follows:
+
+   .. literalinclude:: ../../src/consecutive_repetition/consecutive_repetition.sv
+      :language: systemverilog
+      :lines: 17-17
+
+   As a final note, **observe how the solver is selecting different SDRAM banks** by choosing
+   values for :systemverilog:`bank[7:0]` and it finally found the problem in the bank
+   :systemverilog:`bank[7:0] == 8'hFF` that has the same value as :systemverilog:`nd_bank[7:0]`.
+   That value was never selected by any logic but instead was defined as a *symbolic,
+   non-deterministic variable* that can be, conceptually, any possible valid value. In this
+   scenario, this means that the property holds for all SDRAM banks in the design, for all
+   combination of commands. This is a simple but powerful FPV concept, that will be explained
+   in detail in a future application note.
+
+  .. literalinclude:: ../../src/consecutive_repetition/consecutive_repetition.sv
+      :language: systemverilog
+      :lines: 19-23
 
 As with delay operators, sequence repetition constructs have some variants
 such as:
 
-* **Consecutive repetition range `s[\*m:n]`**: The sequence *s* occurs from
+* **Consecutive repetition range** :systemverilog:`s[*m:n]`: The sequence *s* occurs from
   m to n times.
-* **Infinite repetition range `s[\*]`**: The sequence *s* is repeated zero or more times.
-* **Infinite repetition range `s[+]`**: The sequence *s* is repeated one or more times.
-* **Nonconsecutive repetition operator `s[=m:n]`**: The sequence *s* occurs
+* **Infinite repetition range** :systemverilog:`s[*]`: The sequence *s* is repeated zero or more times.
+* **Infinite repetition range** :systemverilog:`s[+]`: The sequence *s* is repeated one or more times.
+* **Nonconsecutive repetition operator** :systemverilog:`s[=m:n]`: The sequence *s* occurs
   exactly from n to m times and *s is not required to be the last element*.
-* **GoTo repetition operator `s[->m:n]`**: The sequence *s* occurs
+* **GoTo repetition operator** :systemverilog:`s[->m:n]`: The sequence *s* occurs
   exactly from n to m times and *s is required to be the last element*.
 
-.. note::
+.. warning::
    Not all sequential property operators are FPV friendly:
 
    * GoTo and nonconsecutive operators.
@@ -686,14 +740,19 @@ such as:
    * Etc.
 
    These operators increases the complexity of the model and may cause some
-   assertions not converge.
+   assertions not converge. Use them with caution.
+
+   All these operators was demonstrated in practice using the same **seq.sv** in the
+   past, by Matt Venn, so they will not be shown again in this document. The reader is
+   invited to generate some random sequences and try the operators in some properties.
+   It is a great exercise to understand the fundamentals of sequential properties.
 
 
 Property Layer
 --------------
 The property layer is where all the expressiveness of SVA starts to take shape. In
 this layer, Boolean constructs, sequences and property operators are used to
-encapsulate the behavior of the design within `property ... endproperty` blocks
+encapsulate the behavior of the design within :systemverilog:`property ... endproperty` blocks
 that will be further utilised by the *verification layer* to perform a certain task.
 
 A property construct can have formal arguments as shown in Figure 5.4 and Figure 5.5,
@@ -744,7 +803,6 @@ in the next clock cycle.
 | clock cycle.                                                            |
 +-------------------------------------------------------------------------+
 
-
 **Always property**
 This property evaluates to true if the expression *p* holds at all states.
 
@@ -787,6 +845,25 @@ in all states until *q* is asserted.
 | progress during proof evaluation.                                       |
 +-------------------------------------------------------------------------+
 
+.. topic:: Property Operators Examples
+
+   The file *./src/property_operators/property_operators.sv* has some sequences
+   and properties that needs to be fixed:
+
+   Sequences:
+
+   .. literalinclude:: ../../src/property_operators/property_operators.sv
+      :language: systemverilog
+      :lines: 13-17
+
+   Properties:
+
+   .. literalinclude:: ../../src/property_operators/property_operators.sv
+      :language: systemverilog
+      :lines: 19-21
+
+  This is a quite simple exercise. We will publish the solution in the next
+  application note.
 
 Safety Properties
 -----------------
@@ -809,8 +886,8 @@ is shown below:
 
 +----------------------------------------------------------------------+
 | .. literalinclude:: ./child/tvalid_tready.sv                         |
-|     :language: systemverilog                                         |
-|     :lines: 1-14                                                     |
+|    :language: systemverilog                                          |
+|    :lines: 1-14                                                      |
 +======================================================================+
 | Figure 5.10. A safety property to state that a packet should not be  |
 | dropped if the receiver cannot process it.                           |
@@ -848,8 +925,8 @@ and AXI protocol spec, is shown below.
 
 +----------------------------------------------------------------------+
 | .. literalinclude:: ./child/deadlock.sv                              |
-|     :language: systemverilog                                         |
-|     :lines: 16-29                                                    |
+|    :language: systemverilog                                          |
+|    :lines: 16-29                                                     |
 +======================================================================+
 | Figure 5.11. Using a liveness property to check for deadlock         |
 | conditions. This is a very common practice.                          |
@@ -1001,6 +1078,13 @@ shown in Figure 5.11 the following code can be used:
 .. [6]
    Sequential Extended Regular Expressions.
 
+.. [7]
+   The *nd_bank* expression is a non-deterministic value chosen by the
+   formal solver as a symbolic variable. A symbolic variable is a variable
+   that takes any valid value in the initial state and then is kept stable.
+   This variable is useful to track a single arbitrary instances of a design
+   where properties are defined for multiple symmetric units.
+
 ==========
 References
 ==========
@@ -1008,7 +1092,7 @@ References
 * 1800-2017 - IEEE Standard for SystemVerilog Unified Hardware Design, Specification, and
   Verification Language.
 * Bustan, D., Korchemny, D., Seligman, E., & Yang, J. (2012). SystemVerilog Assertions:
-  Past, present, and future SVA standardization experience. IEEE Design & Test of 
+  Past, present, and future SVA standardization experience. IEEE Design & Test of
   Computers, 29(2), 23-31.
 * The AMBA AXI4 Stream SVA Verification IP for FPV which was used to show
   some of the properties described in this AppNote can be obtained in:
