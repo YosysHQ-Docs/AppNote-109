@@ -470,7 +470,7 @@ one or two cycles.
 .. topic:: Bounded Delay Example
 
    The `src/relaxed_delay/relaxed_delay.sv` uses the waveform in Figure 5.2, and a slightly
-   modification of the property used to describe that image, to exemplify the bounded delay 
+   modification of the property used to describe that image, to exemplify the bounded delay
    operator in an assertion.
 
    The sequence is described in `relaxed_delay` as follows:
@@ -480,16 +480,17 @@ one or two cycles.
       :lines: 6-8, 10-11
 
   And the assertion where this sequence is used:
+
   .. literalinclude:: ../../src/relaxed_delay/relaxed_delay.sv
      :language: systemverilog
      :lines: 16
 
    By running **sby -f src/relaxed_delay/relaxed_delay.sby err** an error is shown
    pointing that the last *foo* is not followed by *bar* in the defined time window,
-   as described in Figure 5.1 No match (at smt_step 16).
+   as described in Figure 5.1 wave name *No match* (shown at smt_step 16 in GTKWave).
 
    To fix this, the last *foo* must be followed again by *bar* in one to two cycles,
-   so the sequence needs a change:
+   so the sequence needs to be changed:
 
    .. literalinclude:: ../../src/relaxed_delay/relaxed_delay.sv
       :language: systemverilog
