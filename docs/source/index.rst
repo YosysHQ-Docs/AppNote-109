@@ -467,6 +467,34 @@ one or two cycles.
 | Figure 5.2. Example of sequence `foo ##[1:2] bar`.                   |
 +----------------------------------------------------------------------+
 
+.. topic:: Bounded Delay Example
+
+   The `src/relaxed_delay/relaxed_delay.sv` uses the waveform in Figure 5.2, and a slightly
+   modification of the property used to describe that image, to exemplify the bounded delay 
+   operator in an assertion.
+
+   The sequence is described in `relaxed_delay` as follows:
+
+   .. literalinclude:: ../../src/relaxed_delay/relaxed_delay.sv
+      :language: systemverilog
+      :lines: 6-8, 10-11
+
+  And the assertion where this sequence is used:
+  .. literalinclude:: ../../src/relaxed_delay/relaxed_delay.sv
+     :language: systemverilog
+     :lines: 16
+
+   By running **sby -f src/relaxed_delay/relaxed_delay.sby err** an error is shown
+   pointing that the last *foo* is not followed by *bar* in the defined time window,
+   as described in Figure 5.1 No match (at smt_step 16).
+
+   To fix this, the last *foo* must be followed again by *bar* in one to two cycles,
+   so the sequence needs a change:
+
+   .. literalinclude:: ../../src/relaxed_delay/relaxed_delay.sv
+      :language: systemverilog
+      :lines: 13-14
+
 The bounded operators `##m` and `##[m:n]` where *m* and *n* are non-negative integers,
 can be used to specify clock delays between two events. The Figure 5.2 is
 an example of usage of these operators. For the following sequence:
