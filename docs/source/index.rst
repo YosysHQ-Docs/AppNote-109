@@ -946,6 +946,58 @@ liveness property analysis.
 | Figure 5.12. A very simplistic example of liveness resolution.          |
 +-------------------------------------------------------------------------+
 
+.. topic:: Liveness Property Example
+
+   The liveness properties are very important for FPV, specially in proving designs
+   free of deadlocks, livelocks, starvation and lost of information. One of the
+   problems with liveness, apart from the difficulties to achieve proof convergence, is
+   debugging them. This can be quite an art.
+
+   In future application notes, a deep explanation of liveness properties will be
+   provided, but to introduce some of the issues and solutions when working with them,
+   consider the following trivial Finite State Machine:
+
+   .. image:: media/live_fsm.png
+      :width: 3.78cm
+      :height: 8.7cm
+      :align: center
+
+   This FSM is written as follows:
+
+   .. literalinclude:: ../../src/liveness/liveness.sv
+      :language: systemverilog
+      :lines: 1-24, 28-29, 34-43, 49-49
+
+   The property :systemverilog:`ap_deadlock` was written to capture any deadlock,
+   but due to the *weak* nature of the unbounded delay operator, this will not be
+   possible (why?). The property :systemverilog:`ap_deadlock_2` is a better solution
+   for this problem. By running *sby -f ./src/liveness/liveness.sby err* it can be seen
+   that, although the FSM sequence is correct, SBY shows that the property **FAILS**,
+   furthermore, there is no VCD file to debug. What now?
+
+   One of the techniques to debug liveness properties is to find if the *liveness
+   obligation is fulfilled* by using a bounded safety assertion. If such property
+   fails, it means that a fairness assumption is missing. In this case, the liveness
+   obligation is :systemverilog:`ps == inform_result`. The reader is invited to analyse
+   Figure 5.12 to understand what is happening.
+
+   As mentioned before, a future appnote will delve into this, but to continue with the
+   example, the solution or the missing fairness assumption is shown below:
+
+   .. literalinclude:: ../../src/liveness/liveness.sv
+      :language: systemverilog
+      :lines: 46-47
+
+   Uncomment lines 45 to 48 to enable the :systemverilog:`ap_fairness` assumption.
+
+   By filling line 32 with an erroneous state and running
+   *sby -f ./src/liveness/liveness.sby pass*, the deadlock will be captured by
+   the property and now we know that the CEX is true and not an spurios false negative.
+
+   .. literalinclude:: ../../src/liveness/liveness.sv
+      :language: systemverilog
+      :lines: 32-32
+
 
 Verification Layer
 ------------------
