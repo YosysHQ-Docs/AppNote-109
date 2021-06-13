@@ -1,0 +1,20 @@
+[tasks]
+err
+pass
+
+[options]
+mode bmc
+#depth 19
+
+[engines]
+smtbmc boolector
+
+[script]
+read -sv seq.sv
+err: read -define _ERROR_; read -sv consecutive_repetition.sv
+pass: read -sv consecutive_repetition.sv
+prep -top consecutive_repetition
+
+[files]
+consecutive_repetition.sv
+../seq.sv

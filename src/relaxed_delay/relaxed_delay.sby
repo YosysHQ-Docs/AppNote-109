@@ -1,0 +1,19 @@
+[tasks]
+err
+pass
+
+[options]
+mode bmc
+
+[engines]
+smtbmc boolector
+
+[script]
+read -sv seq.sv
+err: read -define _ERROR_; read -sv relaxed_delay.sv
+pass: read -sv relaxed_delay.sv
+prep -top relaxed_delay
+
+[files]
+relaxed_delay.sv
+ ../seq.sv

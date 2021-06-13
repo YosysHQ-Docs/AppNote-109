@@ -1,0 +1,20 @@
+[tasks]
+cover
+err
+
+[options]
+cover: mode cover
+err: mode bmc
+
+[engines]
+smtbmc
+
+[script]
+read -sv seq.sv
+err: read -define _ERR_; read -sv systemf_sv.sv
+cover: read -sv systemf_sv.sv
+prep -top systemf_sv
+
+[files]
+../seq.sv
+systemf_sv.sv

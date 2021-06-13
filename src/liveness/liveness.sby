@@ -1,0 +1,17 @@
+[tasks]
+err
+pass
+
+[options]
+mode live
+
+[engines]
+aiger suprove
+
+[script]
+err: read -define _ERR_; read -sv liveness.sv
+pass: read -sv liveness.sv
+prep -top liveness
+
+[files]
+liveness.sv
