@@ -1,0 +1,19 @@
+[tasks]
+err
+pass
+
+[options]
+mode bmc
+
+[engines]
+smtbmc
+
+[script]
+read -sv seq.sv
+err: read -define _ERR_; read -sv systemf_bv.sv
+pass: read -sv systemf_bv.sv
+prep -top systemf_bv
+
+[files]
+../seq.sv
+systemf_bv.sv

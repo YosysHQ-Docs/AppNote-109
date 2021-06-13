@@ -948,13 +948,14 @@ liveness property analysis.
 
 .. topic:: Liveness Property Example
 
-   The liveness properties are very important for FPV, specially in proving designs
+   The liveness properties are very important for FPV, specially for proving designs
    free of deadlocks, livelocks, starvation and lost of information. One of the
    problems with liveness, apart from the difficulties to achieve proof convergence, is
-   debugging them. This can be quite an art.
+   debugging them: understanding safety CEX can be difficult sometimes, but interpreting
+   liveness CEX can be quite an art.
 
    In future application notes, a deep explanation of liveness properties will be
-   provided, but to introduce some of the issues and solutions when working with them,
+   provided. To introduce some of the issues and solutions when working with them,
    consider the following trivial Finite State Machine:
 
    .. image:: media/live_fsm.png
@@ -970,10 +971,10 @@ liveness property analysis.
 
    The property :systemverilog:`ap_deadlock` was written to capture any deadlock,
    but due to the *weak* nature of the unbounded delay operator, this will not be
-   possible (why?). The property :systemverilog:`ap_deadlock_2` is a better solution
+   possible (but why?). The property :systemverilog:`ap_deadlock_2` is a better solution
    for this problem. By running *sby -f ./src/liveness/liveness.sby err* it can be seen
    that, although the FSM sequence is correct, SBY shows that the property **FAILS**,
-   furthermore, there is no VCD file to debug. What now?
+   furthermore, there is no VCD file to debug. What to do now?
 
    One of the techniques to debug liveness properties is to find if the *liveness
    obligation is fulfilled* by using a bounded safety assertion. If such property
@@ -1101,6 +1102,160 @@ shown in Figure 5.11 the following code can be used:
      deadlock_free: assert property(handshake_max_wait(handshake_start, handshake_end));
    endchecker
 
+=====================================
+SystemVerilog System Functions in SVA
+=====================================
+The P1800 provides some system functions and utilities that can be used to increase
+expressibility of SVA, these are the *Bit Vector Functions* and *Sampled Value Functions*.
+System functions are well described in the P1800 LRM and are quite straightforward to
+understand. Some examples are shown below for the sake of exemplification. These examples
+contains some errors that needs to be fixed.
+
+.. note::
+   To use SystemVerilog system functions, the argument of the function must be
+   known at elaboration time. Remember that all components of SVA for FPV must
+   be synthesizable.
+
+------------------------------
+Bit Vector Functions Reference
+------------------------------
+
+The :systemverilog:`$countbits` function
+----------------------------------------
+This function returns the number of bits of an specific set of values in
+a bit vector. See the following example.
+
+   .. literalinclude:: ../../src/system_functions/systemf_bv.sv
+      :language: systemverilog
+      :lines: 13, 17
+
+Execute *sby -f ./src/src/system_functions/systemf_bv.sby err* and see the result, it
+may need to be fixed.
+
+
+The :systemverilog:`$countones` function
+----------------------------------------
+Counts the number of 1's in a bus, equivalent to :systemverilog:`$countbits(expr,'1)`.
+See the following example.
+
+   .. literalinclude:: ../../src/system_functions/systemf_bv.sv
+      :language: systemverilog
+      :lines: 13, 18
+
+Execute *sby -f ./src/src/system_functions/systemf_bv.sby err* and see the result, it
+may need to be fixed.
+
+
+The :systemverilog:`$onehot0` function
+--------------------------------------
+Evaluates to true if at most one bit of the bus is set to logic one, otherwise it evaluates
+to zero. As its name mentions, it is used to check that some bits are mutually exclusive. This
+expression is equivalent to :systemverilog:`$countbits(expression,'1)<=1`. See the following example:
+
+   .. literalinclude:: ../../src/system_functions/systemf_bv.sv
+      :language: systemverilog
+      :lines: 22, 26
+
+Execute *sby -f ./src/src/system_functions/systemf_bv.sby err* and see the result, it
+may need to be fixed.
+
+
+The :systemverilog:`$onehot` function
+--------------------------------------
+It is similar to :systemverilog:`$onehot0` with the difference that :systemverilog:`$onehot`
+is equivalent to :systemverilog:`$countbits(expression,'1)==1` (exactly one bit set to
+logic one) and :systemverilog:`$onehot0` requires at most one (or none) bits set to 1. See
+the following example:
+
+
+   .. literalinclude:: ../../src/system_functions/systemf_bv.sv
+      :language: systemverilog
+      :lines: 22, 27
+
+Execute *sby -f ./src/src/system_functions/systemf_bv.sby err* and see the result, it
+may need to be fixed.
+
+The :systemverilog:`$isunknown` function
+----------------------------------------
+This function evaluates to true if any bit from the vector has a don't care ('x) or
+high impedance ('z). At the moment, Tabby CAD has some limitations on these data types
+so the example will be skipped. This function can be used in FPV to debug and detect
+X-propagation in digital designs.
+
+
+-----------------------
+Sampled Value Functions
+-----------------------
+
+The :systemverilog:`$sampled` function
+--------------------------------------
+This function simply returns the sampled value of the argument. This function is
+redundant for concurrent assertions and FPV [8]_, and is more useful in simulation.
+However, there exist a case where is useful for FPV: when using :systemverilog:`disable iff(reset)` to define when the check is disabled, this *reset* results in an
+asynchronous event (i.e., the check will be disabled at *any time* reset becomes 1).
+Using the :systemverilog:`$sampled` function the disable condition can be "synchronized":
+
+.. code:: systemverilog
+
+   assert property (@(posedge clk) disable iff($sampled(reset)) p |-> q);
+
+
+The :systemverilog:`$past` function
+-----------------------------------
+This system function has been studied frequently in other SymbiYosys tutorials. It
+simply returns the sampled value of the expression in *n* steps ago. The value of the
+expression before the initial clock may be undefined, causing the property to fail.
+
+   .. literalinclude:: ../../src/system_functions/systemf_sv.sv
+      :language: systemverilog
+      :lines: 12-13, 15, 17
+
+Execute *sby -f ./src/src/system_functions/systemf_sv.sby err* and see the result, it
+may need to be fixed.
+
+
+The :systemverilog:`$rose` function
+-----------------------------------
+This function returns true if the LSB of the expression was 0 in the previous clock
+tick and 1 in the current.
+
+   .. literalinclude:: ../../src/system_functions/systemf_sv.sv
+      :language: systemverilog
+      :lines: 22-25
+
+Execute *sby -f ./src/src/system_functions/systemf_sv.sby err* and see the result, then run
+*sby -f ./src/src/system_functions/systemf_sv.sby cover* and compare the result. It may need
+to be fixed.
+
+The :systemverilog:`$fell` function
+-----------------------------------
+This function returns true if the LSB of the expression was 1 in the previous clock
+tick and 0 in the current.
+
+   .. literalinclude:: ../../src/system_functions/systemf_sv.sv
+      :language: systemverilog
+      :lines: 27-30
+
+Execute *sby -f ./src/src/system_functions/systemf_sv.sby err* and see the result, then run
+*sby -f ./src/src/system_functions/systemf_sv.sby cover* and compare the result. It may need
+to be fixed.
+
+
+The :systemverilog:`$changed` function
+--------------------------------------
+Returns true if the logic value of the expression changed.
+
+   .. literalinclude:: ../../src/system_functions/systemf_sv.sv
+      :language: systemverilog
+      :lines: 32-34
+
+Write the property *ap_changed* and run *sby -f ./src/src/system_functions/systemf_sv.sby*,
+then try to get a witness of this property.
+
+The :systemverilog:`$stable` function
+-------------------------------------
+Returns true if the logic value of the expression remains stable, as seen in
+:ref:`Consecutive Repetition`.
 
 
 .. [1]
@@ -1136,6 +1291,10 @@ shown in Figure 5.11 the following code can be used:
    that takes any valid value in the initial state and then is kept stable.
    This variable is useful to track a single arbitrary instances of a design
    where properties are defined for multiple symmetric units.
+
+.. [8]
+   Expressions in FPV are already using sampled semantics. This is the reason
+   why :systemverilog:`$sampled` is redundant.
 
 ==========
 References
