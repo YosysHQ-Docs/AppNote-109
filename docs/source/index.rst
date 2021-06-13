@@ -87,10 +87,32 @@ similar to the definition of *property*. In fact, both *assert* and
 the term *assertion* is adopted in ABV, and *property* in FPV. ABV is more
 widely adopted, so the term assertion is used in a more "traditionalist" way.
 
-Another way to define an assertion is as an unambiguous design behavior
-expressed as a Boolean function or temporal expressions, that the design
-must fulfill. Such property are usually described using a language that
-can express behaviors of the design over time.
+.. note::
+
+   The *inconsistency* in the definition of the
+   building blocks of SVA that may lead to confusion can be read from the P1800, where
+   *assertion* is defined as:
+
+   - **16. Assertions, 16.2 Overview, P364, Rev 2017:** "An assertion specifies
+     a behavior of the system".
+   - **16. Assertions, 16.2 Overview, P364, Rev 2017:** "An assertion appears as
+     an assertion statement that states the verification function to be performed".
+   - **16. Assertions, 16.2 Overview, P364, Rev 2017:** "[assertion kinds ...] assert,
+     to specify the property as an obligation for the design that is to be checked to
+     verify that the property holds".
+
+   Whereas property, is defined as:
+
+   - **16.12. Declaring properties, P420, Rev 2017:** "A property defines a behavior
+     of the design".
+
+   So in short, an *assertion* is an affirmation or verification construct of a behavior
+   described using *properties* or the specification.
+
+   Another way to define an assertion is as an unambiguous design behavior
+   expressed as a Boolean function or temporal expressions, that the design
+   must fulfill. Such property are usually described using a language that
+   can express behaviors of the design over time.
 
 *Then, what is SVA?* - SVA is part of the P1800 and standardizes
 assertion language semantics for SystemVerilog. That standard describes
@@ -102,26 +124,6 @@ functional dynamic (simulation/emulation) and static (Formal Property
 Verification) testing. The focus of *YosysHQ* are *static methods*,
 therefore the description of SVA will be related to FPV.
 
-As mentioned before, there is an *inconsistency* in the definition of the
-building blocks of SVA that may lead to confusion. In the P1800, *assertion*
-is defined as:
-
-- **16. Assertions, 16.2 Overview, P364, Rev 2017:** "An assertion specifies
-  a behavior of the system".
-- **16. Assertions, 16.2 Overview, P364, Rev 2017:** "An assertion appears as
-  an assertion statement that states the verification function to be performed".
-- **16. Assertions, 16.2 Overview, P364, Rev 2017:** "[assertion kinds ...] assert,
-  to specify the property as an obligation for the design that is to be checked to
-  verify that the property holds".
-
-Whereas property, is defined as:
-
-- **16.12. Declaring properties, P420, Rev 2017:** "A property defines a behavior
-  of the design".
-
-So in short, an *assertion* is an affirmation or verification construct of a behavior
-described using *properties* or the specification. Hoping to clear up this confusion, the
-next section describes our interpretation of what SVA is.
 
 .. note::
    Although SVA talks a lot about verification tasks, it can (and should) also be
@@ -131,8 +133,7 @@ next section describes our interpretation of what SVA is.
    or some behaviors when a testbench is not available, can be very useful in the
    RTL bring-up, for example.
 
-Re-Introduction to SVA
-----------------------
+
 The building block of SVA is the `property` construct, that not only
 distinguishes an *immediate* from a *concurrent* assertion, but is the
 actual element of the language where the behavior of the design is specified,
