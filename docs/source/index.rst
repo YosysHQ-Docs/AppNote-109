@@ -980,7 +980,9 @@ liveness property analysis.
    obligation is fulfilled* by using a bounded safety assertion. If such property
    fails, it means that a fairness assumption is missing. In this case, the liveness
    obligation is :systemverilog:`ps == inform_result`. The reader is invited to analyse
-   Figure 5.12 to understand what is happening.
+   Figure 5.12 to understand what is happening (hint: there are two return paths to idle,
+   one when start is 0 and other when start can become 1, in only one of these two paths
+   the liveness obligation is fulfilled).
 
    As mentioned before, a future appnote will delve into this, but to continue with the
    example, the solution or the missing fairness assumption is shown below:
