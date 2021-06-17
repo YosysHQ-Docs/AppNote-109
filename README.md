@@ -1,20 +1,15 @@
 YosysHQ AppNote 109 -- Property Checking with SystemVerilog Assertions 
 ======================================================================
 
-+--------------------------------------------------------------------+
-| **What You will learn in this paper**                              |
-+====================================================================+
-| -  A brief history of SystemVerilog Assertions                     |
-|                                                                    |
-| -  SVA layers definition and examples                              |
-|                                                                    |
-| -  Assertion types, sequential property operators                  |
-|                                                                    |
-| -  A short description of liveness and safety properties           |
-|                                                                    |
-| -  Practical examples using the sequence builder module written by |
-|    our CTO Claire Xen.                                             |
-+--------------------------------------------------------------------+
+
+**What You will learn in this paper**
+
+-  A brief history of SystemVerilog Assertions
+-  SVA layers definition and examples
+-  Assertion types, sequential property operators
+-  A short description of liveness and safety properties
+-  Practical examples using the sequence builder module written by
+   our CTO Claire Xen.
 
 --------
 Abstract
