@@ -424,12 +424,12 @@ the property holds).
 *Strong* sequential properties are identified by the prefix *s_* as
 in:
 
-* :systemverilog:`s_eventually`.
-* :systemverilog:`s_until`.
-* :systemverilog:`s_until_with`.
-* :systemverilog:`s_nexttime`.
+* *s_eventually*
+* *s_until*
+* *s_until_with*
+* *s_nexttime*
 
-Or enclosed within parenthesis followed by the keyword *strong* as in:
+Or enclosed within parenthesis after the keyword *strong* as in:
 
 .. code-block:: systemverilog
 
