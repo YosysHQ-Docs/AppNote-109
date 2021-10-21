@@ -376,7 +376,7 @@ asserted" that can be expressed as *an assertion* in the following way:
 
    .. literalinclude:: ../../src/invariant/invariant.sv
       :language: systemverilog
-      :lines: 5-7, 8
+      :lines: 5-7,9
 
    By running the command **sby -f ../src/invariant/invariant.sby err** it can be seen that
    *packet_error* is set as *1* at step *6* causing a failure of the property. To fix this,
