@@ -10,3 +10,7 @@ p {
 th {
   text-align: left;
 }
+
+ .vp-sidebar ul {
+    padding-left: 1.2em;
+}
