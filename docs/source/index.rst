@@ -306,7 +306,6 @@ checked. The Figure 4.3 shows an example of default reset definition.
 +----------------------------------------------------------------------+
 | .. literalinclude:: ./child/pipe.sv                                  |
 |    :language: systemverilog                                          |
-|    :lines: 1-13                                                      |
 +======================================================================+
 | Figure 4.3. Usage of default clocking and default disable events used|
 | to state that all concurrent properties are checked each *posedge*   |
@@ -432,6 +431,7 @@ in:
 Or enclosed within parenthesis after the keyword *strong* as in:
 
 .. code-block:: systemverilog
+   :force:
 
    strong(s ##[1:$] n);
 
@@ -943,6 +943,7 @@ and AXI protocol spec, is shown below.
 | .. literalinclude:: ./child/deadlock.sv                              |
 |    :language: systemverilog                                          |
 |    :lines: 16-29                                                     |
+|    :force:                                                           |
 +======================================================================+
 | Figure 5.11. Using a liveness property to check for deadlock         |
 | conditions. This is a very common practice.                          |
@@ -984,6 +985,7 @@ liveness property analysis.
    .. literalinclude:: ../../src/liveness/liveness.sv
       :language: systemverilog
       :lines: 1-24, 28-29, 34-43, 49-49
+      :force:
 
    The property :systemverilog:`ap_deadlock` was written to capture any deadlock,
    but due to the *weak* nature of the unbounded delay operator, this will not be
@@ -1081,7 +1083,7 @@ In this way and using the other verification directives as well, FPV users
 can create powerful SVA checks for simple and complex designs.
 
 .. note::
-   The action block (or the `else $error [...]) is not synthesizable, therefore
+   The action block (or the ```else $error [...]``) is not synthesizable, therefore
    an FPV tool will not execute that part of the assertion. This helps to debug
    the case where a property is failing as the FPV user can see the source code and get
    an idea of where to check for more information.

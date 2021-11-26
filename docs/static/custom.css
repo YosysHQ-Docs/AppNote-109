@@ -1,0 +1,12 @@
+.wy-table-responsive table td {
+  white-space: normal;
+}
+
+p {
+  text-align: justify;
+  text-justify: inter-word;
+}
+
+th {
+  text-align: left;
+}
