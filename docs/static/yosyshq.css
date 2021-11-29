@@ -26,6 +26,10 @@ p {
     color: #d6368f;
 }
 
+.vp-sidebar li li a {
+    color: #4b72b8;
+}
+
 .vp-sidebar h3 {
     padding-left: 1.5rem !important;
 }
