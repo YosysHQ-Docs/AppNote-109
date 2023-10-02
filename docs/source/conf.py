@@ -3,26 +3,40 @@ project = 'YosysHQ AppNote-109'
 author = 'YosysHQ GmbH'
 copyright ='2021 YosysHQ GmbH'
 
+templates_path = ['_templates']
+
 # select HTML theme
-html_theme = 'press'
-html_logo = '../static/logo.png'
-html_favicon = '../static/favico.png'
-html_css_files = ['yosyshq.css', 'custom.css']
-html_sidebars = {'**': ['util/searchbox.html', 'localtoc.html']}
+html_theme = "furo"
 
 # These folders are copied to the documentation's HTML output
-html_static_path = ['../static', "../images"]
+html_static_path = ['_static', 'media']
+
+html_logo = '_static/logo.png'
+html_favicon = '_static/favico.png'
+html_css_files = ['custom.css']
 
 # code blocks style 
 pygments_style = 'colorful'
 highlight_language = 'systemverilog'
 
 html_theme_options = {
-    'external_links' : [
-        ('YosysHQ Docs', 'https://yosyshq.readthedocs.io'),
-        ('Blog', 'https://blog.yosyshq.com'),
-        ('Website', 'https://www.yosyshq.com'),
-    ],
+    "sidebar_hide_name": True,
+
+    "light_css_variables": {
+        "color-brand-primary": "#d6368f",
+        "color-brand-content": "#4b72b8",
+        "color-api-name": "#8857a3",
+        "color-api-pre-name": "#4b72b8",
+        "color-link": "#8857a3",
+    },
+
+    "dark_css_variables": {
+        "color-brand-primary": "#e488bb",
+        "color-brand-content": "#98bdff",
+        "color-api-name": "#8857a3",
+        "color-api-pre-name": "#4b72b8",
+        "color-link": "#be95d5",
+    },
 }
 
 extensions = ['sphinx.ext.autosectionlabel']

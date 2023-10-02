@@ -454,7 +454,7 @@ Sequences can be more complex than just Boolean values. Basic sequences
 can contain single delays (for example :systemverilog:`##1` that means one cycle delay) and
 bounded/unbounded range delays (the bounded sequence :systemverilog:`##[1:10]` means one
 to ten cycles later, the unbounded sequence :systemverilog:`##[+]` means one or more
-cycles later). Sequences can be enclosed within :systemverilog:`sequence … endsequence`
+cycles later). Sequences can be enclosed within :systemverilog:`sequence {} endsequence`
 SVA constructs, or described directly in a property block.
 
 A sequence can be seen as a description that defines values over time,
